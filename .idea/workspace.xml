@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="206d38d3-0727-4ee1-84a5-c25b0ae99a88" name="Changes" comment="amir edit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/login_1_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/database/login_1_schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStorage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStorage.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -13,7 +16,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="73" />
+    <option name="cachedIndexableFilesCount" value="38" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -24,12 +27,12 @@
     &quot;assignee&quot;: &quot;EboyNathan&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/EboyNathan/WarehouseManagementSystem.git&quot;,
-    &quot;accountId&quot;: &quot;7e01a764-3a69-4fdf-b28c-9186c29c10e6&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/EboyNathan/WarehouseManagementSystem.git",
+    "accountId": "18ac2132-d2fd-4c6b-9857-b84206fc5b77"
   }
-}</component>
+}]]></component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -54,6 +57,7 @@
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "UI_DESIGNER_EDITOR_MODE.PaletteManager.WIDTH": "19",
     "UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.WIDTH": "281",
@@ -100,6 +104,7 @@
       <workItem from="1777957579531" duration="1034000" />
       <workItem from="1777959932696" duration="14478000" />
       <workItem from="1778052767462" duration="23032000" />
+      <workItem from="1778084945094" duration="2048000" />
     </task>
     <task id="LOCAL-00001" summary="amir edit">
       <option name="closed" value="true" />

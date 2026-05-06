@@ -528,7 +528,7 @@ public class DataStorage {
             ensureUsersTable(connection);
             ensureItemsTable(connection);
             ensureOrdersTable(connection);
-            ensureAdminUser(connection);
+            ensureDefaultUsers(connection);
             ensureDefaultInventoryItems(connection);
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to initialize database.", e);
@@ -691,20 +691,37 @@ public class DataStorage {
         }
     }
 
-    private void ensureAdminUser(Connection connection) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM users WHERE username = 'admin'";
-        try (PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-            resultSet.next();
-            if (resultSet.getInt(1) == 0) {
-                try (PreparedStatement insert = connection.prepareStatement(
-                        "INSERT INTO users (username, password, role) VALUES ('admin', '1234', 'ADMIN')")) {
-                    insert.executeUpdate();
-                }
-            } else {
-                try (PreparedStatement update = connection.prepareStatement(
-                        "UPDATE users SET role = 'ADMIN' WHERE username = 'admin' AND (role IS NULL OR role <> 'ADMIN')")) {
-                    update.executeUpdate();
+    private void ensureDefaultUsers(Connection connection) throws SQLException {
+        ensureDefaultUser(connection, "admin", "1234", UserRole.ADMIN);
+        ensureDefaultUser(connection, "eboy", "1234", UserRole.ADMIN);
+        ensureDefaultUser(connection, "nathan", "1234", UserRole.ADMIN);
+        ensureDefaultUser(connection, "receiver", "1234", UserRole.RECEIVER);
+        ensureDefaultUser(connection, "starzy", "1234", UserRole.RECEIVER);
+    }
+
+    private void ensureDefaultUser(Connection connection, String username, String password, UserRole role) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                if (resultSet.getInt(1) == 0) {
+                    try (PreparedStatement insert = connection.prepareStatement(
+                            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)")) {
+                        insert.setString(1, username);
+                        insert.setString(2, password);
+                        insert.setString(3, role.name());
+                        insert.executeUpdate();
+                    }
+                } else {
+                    try (PreparedStatement update = connection.prepareStatement(
+                            "UPDATE users SET role = ? WHERE username = ? AND (role IS NULL OR role <> ?)")) {
+                        update.setString(1, role.name());
+                        update.setString(2, username);
+                        update.setString(3, role.name());
+                        update.executeUpdate();
+                    }
                 }
             }
         }

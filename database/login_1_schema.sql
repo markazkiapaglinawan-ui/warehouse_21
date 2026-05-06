@@ -82,3 +82,27 @@ SELECT 'admin', '1234', 'ADMIN'
 WHERE NOT EXISTS (
     SELECT 1 FROM `users` WHERE `username` = 'admin'
 );
+
+INSERT INTO `users` (`username`, `password`, `role`)
+SELECT 'eboy', '1234', 'ADMIN'
+WHERE NOT EXISTS (
+    SELECT 1 FROM `users` WHERE `username` = 'eboy'
+);
+
+INSERT INTO `users` (`username`, `password`, `role`)
+SELECT 'nathan', '1234', 'ADMIN'
+WHERE NOT EXISTS (
+    SELECT 1 FROM `users` WHERE `username` = 'nathan'
+);
+
+INSERT INTO `users` (`username`, `password`, `role`)
+SELECT 'receiver', '1234', 'RECEIVER'
+WHERE NOT EXISTS (
+    SELECT 1 FROM `users` WHERE `username` = 'receiver'
+);
+
+INSERT INTO `users` (`username`, `password`, `role`)
+SELECT 'starzy', '1234', 'RECEIVER'
+WHERE NOT EXISTS (
+    SELECT 1 FROM `users` WHERE `username` = 'starzy'
+);
