@@ -276,8 +276,8 @@ public class ReportForm {
             String paymentStatus;
             if (order.paid) {
                 String method = (order.paymentMethod == null || order.paymentMethod.isBlank())
-                        ? "CASH"
-                        : order.paymentMethod.toUpperCase();
+                        ? "Walk-in Payment"
+                        : order.paymentMethod;
                 paymentStatus = "PAID - " + method;
             } else {
                 paymentStatus = "UNPAID";

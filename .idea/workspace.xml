@@ -7,8 +7,20 @@
     <list default="true" id="206d38d3-0727-4ee1-84a5-c25b0ae99a88" name="Changes" comment="amir edit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/ballpen-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/ballpen-item.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/bondpaper-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/bondpaper-item.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/folders-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/folders-item.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hammer-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/hammer-item.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/notebook-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/notebook-item.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/router-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/router-item.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/screwdriver-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/screwdriver-item.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/stapler-item.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/stapler-item.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/login_1_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/database/login_1_schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CustomerMainMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CustomerMainMenu.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/DataStorage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStorage.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MainMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MainMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/OrderForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/OrderForm.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ReportForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ReportForm.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,7 +28,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="38" />
+    <option name="cachedIndexableFilesCount" value="66" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -27,12 +39,12 @@
     &quot;assignee&quot;: &quot;EboyNathan&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/EboyNathan/WarehouseManagementSystem.git",
-    "accountId": "18ac2132-d2fd-4c6b-9857-b84206fc5b77"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/EboyNathan/WarehouseManagementSystem.git&quot;,
+    &quot;accountId&quot;: &quot;18ac2132-d2fd-4c6b-9857-b84206fc5b77&quot;
   }
-}]]></component>
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -49,35 +61,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.LoginForm.executor": "Run",
-    "Application.MainMenu.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "UI_DESIGNER_EDITOR_MODE.PaletteManager.WIDTH": "19",
-    "UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.WIDTH": "281",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "ml.llm.AcpAgentsConfigurable",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.LoginForm.executor&quot;: &quot;Run&quot;,
+    &quot;Application.MainMenu.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;UI_DESIGNER_EDITOR_MODE.PaletteManager.WIDTH&quot;: &quot;19&quot;,
+    &quot;UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.WIDTH&quot;: &quot;281&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.AcpAgentsConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="206d38d3-0727-4ee1-84a5-c25b0ae99a88" name="Changes" comment="" />
@@ -104,7 +116,9 @@
       <workItem from="1777957579531" duration="1034000" />
       <workItem from="1777959932696" duration="14478000" />
       <workItem from="1778052767462" duration="23032000" />
-      <workItem from="1778084945094" duration="2048000" />
+      <workItem from="1778084945094" duration="4863000" />
+      <workItem from="1778090285130" duration="3594000" />
+      <workItem from="1778128299114" duration="606000" />
     </task>
     <task id="LOCAL-00001" summary="amir edit">
       <option name="closed" value="true" />
@@ -130,7 +144,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778082255623</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="amir edit">
+      <option name="closed" value="true" />
+      <created>1778087045308</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1778087045308</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -165,15 +165,18 @@ public class DataStorage {
                     if (order.quantity <= 0) {
                         throw new IllegalArgumentException("Quantity must be greater than zero.");
                     }
-                    if (availableQuantity < order.quantity) {
+                    boolean preOrder = order.status != null && order.status.toUpperCase().contains("PRE-ORDER");
+                    if (!preOrder && availableQuantity < order.quantity) {
                         throw new IllegalArgumentException("Insufficient stock! Only " + availableQuantity + " available.");
                     }
 
                     try (PreparedStatement updateStock = connection.prepareStatement(updateStockSql);
                          PreparedStatement insertOrder = connection.prepareStatement(insertOrderSql)) {
-                        updateStock.setInt(1, order.quantity);
-                        updateStock.setInt(2, itemId);
-                        updateStock.executeUpdate();
+                        if (!preOrder) {
+                            updateStock.setInt(1, order.quantity);
+                            updateStock.setInt(2, itemId);
+                            updateStock.executeUpdate();
+                        }
 
                         insertOrder.setString(1, order.id);
                         insertOrder.setString(2, order.customer);
@@ -296,6 +299,61 @@ public class DataStorage {
         }
     }
 
+    public synchronized void addCustomerServiceMessage(CustomerServiceMessage message) {
+        if (message == null) {
+            throw new IllegalArgumentException("Customer service message is required.");
+        }
+
+        String sql = """
+                INSERT INTO customer_service_messages
+                    (customer_username, customer_name, subject, order_code, message)
+                VALUES (?, ?, ?, ?, ?)
+                """;
+        try (Connection connection = openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, message.customerUsername);
+            statement.setString(2, message.customerName);
+            statement.setString(3, message.subject);
+            if (message.orderCode == null || message.orderCode.isBlank()) {
+                statement.setNull(4, Types.VARCHAR);
+            } else {
+                statement.setString(4, message.orderCode);
+            }
+            statement.setString(5, message.message);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to submit customer service message.", e);
+        }
+    }
+
+    public synchronized List<CustomerServiceMessage> getCustomerServiceMessages() {
+        String sql = """
+                SELECT id, customer_username, customer_name, subject, order_code, message, created_at
+                FROM customer_service_messages
+                ORDER BY created_at DESC, id DESC
+                """;
+        List<CustomerServiceMessage> messages = new ArrayList<>();
+
+        try (Connection connection = openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                messages.add(new CustomerServiceMessage(
+                        resultSet.getInt("id"),
+                        resultSet.getString("customer_username"),
+                        resultSet.getString("customer_name"),
+                        resultSet.getString("subject"),
+                        resultSet.getString("order_code"),
+                        resultSet.getString("message"),
+                        resultSet.getString("created_at")
+                ));
+            }
+            return messages;
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to load customer service messages.", e);
+        }
+    }
+
     public synchronized void assignCourier(String orderId, String courierName) {
         String sql = """
                 UPDATE orders
@@ -315,7 +373,7 @@ public class DataStorage {
     }
 
     public synchronized void cancelOrder(String orderId) {
-        String findOrderSql = "SELECT id, item_id, quantity FROM orders WHERE order_code = ? FOR UPDATE";
+        String findOrderSql = "SELECT id, item_id, quantity, status FROM orders WHERE order_code = ? FOR UPDATE";
         String restoreStockSql = "UPDATE items SET quantity = quantity + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         String deleteOrderSql = "DELETE FROM orders WHERE id = ?";
 
@@ -333,12 +391,16 @@ public class DataStorage {
                     int orderRowId = resultSet.getInt("id");
                     int itemId = resultSet.getInt("item_id");
                     int quantity = resultSet.getInt("quantity");
+                    String status = resultSet.getString("status");
+                    boolean preOrder = status != null && status.toUpperCase().contains("PRE-ORDER");
 
                     try (PreparedStatement restoreStock = connection.prepareStatement(restoreStockSql);
                          PreparedStatement deleteOrder = connection.prepareStatement(deleteOrderSql)) {
-                        restoreStock.setInt(1, quantity);
-                        restoreStock.setInt(2, itemId);
-                        restoreStock.executeUpdate();
+                        if (!preOrder) {
+                            restoreStock.setInt(1, quantity);
+                            restoreStock.setInt(2, itemId);
+                            restoreStock.executeUpdate();
+                        }
 
                         deleteOrder.setInt(1, orderRowId);
                         deleteOrder.executeUpdate();
@@ -528,6 +590,7 @@ public class DataStorage {
             ensureUsersTable(connection);
             ensureItemsTable(connection);
             ensureOrdersTable(connection);
+            ensureCustomerServiceTable(connection);
             ensureDefaultUsers(connection);
             ensureDefaultInventoryItems(connection);
         } catch (SQLException e) {
@@ -622,6 +685,21 @@ public class DataStorage {
                 "ALTER TABLE orders ADD COLUMN forwarded_at TIMESTAMP NULL");
     }
 
+    private void ensureCustomerServiceTable(Connection connection) throws SQLException {
+        executeStatement(connection, """
+                CREATE TABLE IF NOT EXISTS customer_service_messages (
+                    id INT NOT NULL AUTO_INCREMENT,
+                    customer_username VARCHAR(45) NOT NULL,
+                    customer_name VARCHAR(100) NOT NULL,
+                    subject VARCHAR(80) NOT NULL,
+                    order_code VARCHAR(50) NULL,
+                    message TEXT NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id)
+                )
+                """);
+    }
+
     private void ensureDefaultInventoryItems(Connection connection) throws SQLException {
         String countSql = "SELECT COUNT(*) FROM items";
         try (PreparedStatement countStmt = connection.prepareStatement(countSql);
@@ -692,11 +770,12 @@ public class DataStorage {
     }
 
     private void ensureDefaultUsers(Connection connection) throws SQLException {
+        removeDefaultUser(connection, "starzy1");
         ensureDefaultUser(connection, "admin", "1234", UserRole.ADMIN);
         ensureDefaultUser(connection, "eboy", "1234", UserRole.ADMIN);
         ensureDefaultUser(connection, "nathan", "1234", UserRole.ADMIN);
         ensureDefaultUser(connection, "receiver", "1234", UserRole.RECEIVER);
-        ensureDefaultUser(connection, "starzy", "1234", UserRole.RECEIVER);
+        ensureDefaultUser(connection, "starzy", "1234", UserRole.CUSTOMER);
     }
 
     private void ensureDefaultUser(Connection connection, String username, String password, UserRole role) throws SQLException {
@@ -724,6 +803,14 @@ public class DataStorage {
                     }
                 }
             }
+        }
+    }
+
+    private void removeDefaultUser(Connection connection, String username) throws SQLException {
+        try (PreparedStatement delete = connection.prepareStatement(
+                "DELETE FROM users WHERE username = ? AND LOWER(username) <> 'admin'")) {
+            delete.setString(1, username);
+            delete.executeUpdate();
         }
     }
 
@@ -879,6 +966,30 @@ public class DataStorage {
             this.customerUsername = customerUsername == null ? "" : customerUsername;
             this.courierName = courierName == null ? "" : courierName;
             this.forwardedAt = forwardedAt == null ? "" : forwardedAt;
+        }
+    }
+
+    public static class CustomerServiceMessage {
+        public int id;
+        public String customerUsername;
+        public String customerName;
+        public String subject;
+        public String orderCode;
+        public String message;
+        public String createdAt;
+
+        public CustomerServiceMessage(String customerUsername, String customerName, String subject, String orderCode, String message) {
+            this(0, customerUsername, customerName, subject, orderCode, message, "");
+        }
+
+        public CustomerServiceMessage(int id, String customerUsername, String customerName, String subject, String orderCode, String message, String createdAt) {
+            this.id = id;
+            this.customerUsername = customerUsername == null ? "" : customerUsername;
+            this.customerName = customerName == null ? "" : customerName;
+            this.subject = subject == null ? "" : subject;
+            this.orderCode = orderCode == null ? "" : orderCode;
+            this.message = message == null ? "" : message;
+            this.createdAt = createdAt == null ? "" : createdAt;
         }
     }
 }

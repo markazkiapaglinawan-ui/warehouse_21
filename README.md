@@ -24,7 +24,7 @@ MySQL must be running on `127.0.0.1:3306` with database `login_1`, username `roo
 | eboy | 1234 | ADMIN |
 | nathan | 1234 | ADMIN |
 | receiver | 1234 | RECEIVER |
-| starzy | 1234 | RECEIVER |
+| starzy | 1234 | CUSTOMER |
 
 ## Collaboration
 

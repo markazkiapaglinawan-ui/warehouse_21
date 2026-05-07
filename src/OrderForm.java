@@ -479,7 +479,7 @@ public class OrderForm {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Pay by QR", createQrPaymentPanel(orderId, customer, itemName, totalPrice));
         JPanel cashPanel = createCashierPaymentPanel(totalPrice);
-        tabs.addTab("Pay by Cash", cashPanel);
+        tabs.addTab("Walk-in Payment", cashPanel);
         tabs.putClientProperty("cashField", cashPanel.getClientProperty("cashField"));
         root.add(tabs, BorderLayout.CENTER);
 
@@ -505,7 +505,7 @@ public class OrderForm {
                     JOptionPane.showMessageDialog(dialog, "Cash amount is less than order total.", "Insufficient Cash", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                paymentMethod[0] = "CASH";
+                paymentMethod[0] = "Walk-in Payment";
             } else {
                 paymentMethod[0] = "QR";
             }
@@ -645,7 +645,7 @@ public class OrderForm {
             // If QR API is unavailable, show fallback text.
         }
         targetLabel.setIcon(null);
-        targetLabel.setText("<html><center>QR service unavailable.<br>Use Pay by Cash instead.</center></html>");
+        targetLabel.setText("<html><center>QR service unavailable.<br>Use Walk-in Payment instead.</center></html>");
     }
 
     private void showReceipt(String orderId, String customer, String itemName, int quantity, double totalPrice, String paymentMethod) {

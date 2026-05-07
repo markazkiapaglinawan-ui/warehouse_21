@@ -19,6 +19,7 @@ public class MainMenu {
     private final UserForm userForm;
     private final ReportForm reportForm;
     private final ReceiverForm receiverForm;
+    private final CustomerServiceForm customerServiceForm;
     private final Runnable logoutHandler;
     private final CardLayout contentLayout = new CardLayout();
     private final Map<String, JButton> navButtons = new LinkedHashMap<>();
@@ -29,6 +30,7 @@ public class MainMenu {
     private JButton ordersButton;
     private JButton usersButton;
     private JButton reportsButton;
+    private JButton customerServiceButton;
     private JButton logoutButton;
     private JButton exitButton;
     private JLabel brandLabel;
@@ -56,6 +58,7 @@ public class MainMenu {
         this.userForm = new UserForm(userRole);
         this.reportForm = new ReportForm(userRole);
         this.receiverForm = new ReceiverForm();
+        this.customerServiceForm = new CustomerServiceForm();
 
         if (mainPanel == null) {
             buildUi();
@@ -89,16 +92,19 @@ public class MainMenu {
         ordersButton = createNavButton("Orders");
         usersButton = createNavButton("Users");
         reportsButton = createNavButton("Reports");
+        customerServiceButton = createNavButton("Customer Service");
 
         navButtons.put("inventory", inventoryButton);
         navButtons.put("orders", ordersButton);
         navButtons.put("users", usersButton);
         navButtons.put("reports", reportsButton);
+        navButtons.put("customerService", customerServiceButton);
 
         navPanel.add(inventoryButton);
         navPanel.add(ordersButton);
         navPanel.add(usersButton);
         navPanel.add(reportsButton);
+        navPanel.add(customerServiceButton);
 
         JPanel accountPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         accountPanel.setOpaque(false);
@@ -127,6 +133,7 @@ public class MainMenu {
         contentPanel.add(wrapContent(orderForm.getMainPanel()), "orders");
         contentPanel.add(wrapContent(userForm.getMainPanel()), "users");
         contentPanel.add(wrapContent(reportForm.getMainPanel()), "reports");
+        contentPanel.add(wrapContent(customerServiceForm.getMainPanel()), "customerService");
         contentPanel.add(wrapContent(receiverForm.getMainPanel()), "receiver");
 
         mainPanel.add(headerPanel, BorderLayout.NORTH);
@@ -158,11 +165,13 @@ public class MainMenu {
         styleNavButton(ordersButton, "Orders");
         styleNavButton(usersButton, "Users");
         styleNavButton(reportsButton, "Reports");
+        styleNavButton(customerServiceButton, "Customer Service");
 
         navButtons.put("inventory", inventoryButton);
         navButtons.put("orders", ordersButton);
         navButtons.put("users", usersButton);
         navButtons.put("reports", reportsButton);
+        navButtons.put("customerService", customerServiceButton);
 
         styleUtilityButton(logoutButton, new Color(102, 115, 136));
         styleUtilityButton(exitButton, new Color(210, 72, 72));
@@ -175,6 +184,7 @@ public class MainMenu {
         contentPanel.add(wrapContent(orderForm.getMainPanel()), "orders");
         contentPanel.add(wrapContent(userForm.getMainPanel()), "users");
         contentPanel.add(wrapContent(reportForm.getMainPanel()), "reports");
+        contentPanel.add(wrapContent(customerServiceForm.getMainPanel()), "customerService");
         contentPanel.add(wrapContent(receiverForm.getMainPanel()), "receiver");
     }
 
@@ -210,6 +220,10 @@ public class MainMenu {
         ordersButton.addActionListener(event -> showNavigationMenu(ordersButton, "orders", orderActions()));
         usersButton.addActionListener(event -> showNavigationMenu(usersButton, "users", userActions()));
         reportsButton.addActionListener(event -> showNavigationMenu(reportsButton, "reports", reportActions()));
+        customerServiceButton.addActionListener(event -> {
+            customerServiceForm.refreshMessages();
+            showModule("customerService");
+        });
 
         logoutButton.addActionListener(event -> handleLogout());
         exitButton.addActionListener(event -> System.exit(0));
@@ -299,8 +313,10 @@ public class MainMenu {
             inventoryButton.setEnabled(false);
             usersButton.setEnabled(false);
             reportsButton.setEnabled(false);
+            customerServiceButton.setEnabled(false);
             ordersButton.setText("Dispatch");
             ordersButton.setToolTipText("Receiver dispatch workflow");
+            customerServiceButton.setToolTipText("Only admins and staff can view customer service messages.");
         }
     }
 

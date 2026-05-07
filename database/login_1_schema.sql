@@ -77,6 +77,17 @@ CREATE TABLE IF NOT EXISTS `orders` (
     CONSTRAINT `fk_orders_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `customer_service_messages` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `customer_username` VARCHAR(45) NOT NULL,
+    `customer_name` VARCHAR(100) NOT NULL,
+    `subject` VARCHAR(80) NOT NULL,
+    `order_code` VARCHAR(50) NULL,
+    `message` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+
 INSERT INTO `users` (`username`, `password`, `role`)
 SELECT 'admin', '1234', 'ADMIN'
 WHERE NOT EXISTS (
@@ -102,7 +113,14 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO `users` (`username`, `password`, `role`)
-SELECT 'starzy', '1234', 'RECEIVER'
+SELECT 'starzy', '1234', 'CUSTOMER'
 WHERE NOT EXISTS (
     SELECT 1 FROM `users` WHERE `username` = 'starzy'
 );
+
+UPDATE `users`
+SET `role` = 'CUSTOMER'
+WHERE `username` = 'starzy';
+
+DELETE FROM `users`
+WHERE `username` = 'starzy1';
