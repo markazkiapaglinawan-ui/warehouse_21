@@ -28,7 +28,7 @@ public class DataStorage {
             throw new IllegalArgumentException("Item is required.");
         }
 
-        String sql = "INSERT INTO items (item_code, name, category, quantity, price, aisle, rack, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO items (item_code, name, category, quantity, price, aisle, rack, bin_code, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = openConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, item.id);
@@ -39,6 +39,7 @@ public class DataStorage {
             statement.setString(6, item.aisle);
             statement.setString(7, item.rack);
             statement.setString(8, item.binCode);
+            statement.setString(9, item.imagePath);
             statement.executeUpdate();
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to add item.", e);
@@ -46,7 +47,7 @@ public class DataStorage {
     }
 
     public synchronized List<Item> getItems() {
-        String sql = "SELECT item_code, name, category, quantity, price, aisle, rack, bin_code FROM items ORDER BY id";
+        String sql = "SELECT item_code, name, category, quantity, price, aisle, rack, bin_code, image_path FROM items ORDER BY id";
         List<Item> items = new ArrayList<>();
 
         try (Connection connection = openConnection();
@@ -61,7 +62,8 @@ public class DataStorage {
                         resultSet.getDouble("price"),
                         resultSet.getString("aisle"),
                         resultSet.getString("rack"),
-                        resultSet.getString("bin_code")
+                        resultSet.getString("bin_code"),
+                        resultSet.getString("image_path")
                 ));
             }
             return items;
@@ -71,7 +73,7 @@ public class DataStorage {
     }
 
     public synchronized Item findItemById(String itemId) {
-        String sql = "SELECT item_code, name, category, quantity, price, aisle, rack, bin_code FROM items WHERE item_code = ?";
+        String sql = "SELECT item_code, name, category, quantity, price, aisle, rack, bin_code, image_path FROM items WHERE item_code = ?";
 
         try (Connection connection = openConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -87,7 +89,8 @@ public class DataStorage {
                             resultSet.getDouble("price"),
                             resultSet.getString("aisle"),
                             resultSet.getString("rack"),
-                            resultSet.getString("bin_code")
+                            resultSet.getString("bin_code"),
+                            resultSet.getString("image_path")
                     );
                 }
                 return null;
@@ -102,7 +105,7 @@ public class DataStorage {
             throw new IllegalArgumentException("Updated item is required.");
         }
 
-        String sql = "UPDATE items SET item_code = ?, name = ?, category = ?, quantity = ?, price = ?, aisle = ?, rack = ?, bin_code = ?, updated_at = CURRENT_TIMESTAMP WHERE item_code = ?";
+        String sql = "UPDATE items SET item_code = ?, name = ?, category = ?, quantity = ?, price = ?, aisle = ?, rack = ?, bin_code = ?, image_path = ?, updated_at = CURRENT_TIMESTAMP WHERE item_code = ?";
         try (Connection connection = openConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, updatedItem.id);
@@ -113,7 +116,8 @@ public class DataStorage {
             statement.setString(6, updatedItem.aisle);
             statement.setString(7, updatedItem.rack);
             statement.setString(8, updatedItem.binCode);
-            statement.setString(9, originalItemId);
+            statement.setString(9, updatedItem.imagePath);
+            statement.setString(10, originalItemId);
 
             if (statement.executeUpdate() == 0) {
                 throw new IllegalArgumentException("Item not found.");
@@ -638,6 +642,7 @@ public class DataStorage {
                     aisle VARCHAR(30) NULL,
                     rack VARCHAR(30) NULL,
                     bin_code VARCHAR(30) NULL,
+                    image_path VARCHAR(255) NULL,
                     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     PRIMARY KEY (id),
@@ -650,6 +655,8 @@ public class DataStorage {
                 "ALTER TABLE items ADD COLUMN rack VARCHAR(30) NULL");
         ensureColumn(connection, "items", "bin_code",
                 "ALTER TABLE items ADD COLUMN bin_code VARCHAR(30) NULL");
+        ensureColumn(connection, "items", "image_path",
+                "ALTER TABLE items ADD COLUMN image_path VARCHAR(255) NULL");
     }
 
     private void ensureOrdersTable(Connection connection) throws SQLException {
@@ -752,7 +759,7 @@ public class DataStorage {
                 new Item("FG-004", "Water Bottles", "Finished goods", 110, 220.00),
                 new Item("FG-005", "Headphones", "Finished goods", 55, 1599.00)
         );
-        String insertSql = "INSERT INTO items (item_code, name, category, quantity, price, aisle, rack, bin_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertSql = "INSERT INTO items (item_code, name, category, quantity, price, aisle, rack, bin_code, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         for (Item item : defaults) {
             try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
@@ -764,6 +771,7 @@ public class DataStorage {
                 insertStmt.setString(6, "");
                 insertStmt.setString(7, "");
                 insertStmt.setString(8, "");
+                insertStmt.setString(9, "");
                 insertStmt.executeUpdate();
             }
         }
@@ -908,12 +916,17 @@ public class DataStorage {
         public String aisle;
         public String rack;
         public String binCode;
+        public String imagePath;
 
         public Item(String id, String name, String category, int quantity, double price) {
             this(id, name, category, quantity, price, "", "", "");
         }
 
         public Item(String id, String name, String category, int quantity, double price, String aisle, String rack, String binCode) {
+            this(id, name, category, quantity, price, aisle, rack, binCode, "");
+        }
+
+        public Item(String id, String name, String category, int quantity, double price, String aisle, String rack, String binCode, String imagePath) {
             this.id = id;
             this.name = name;
             this.category = category;
@@ -922,6 +935,7 @@ public class DataStorage {
             this.aisle = aisle == null ? "" : aisle;
             this.rack = rack == null ? "" : rack;
             this.binCode = binCode == null ? "" : binCode;
+            this.imagePath = imagePath == null ? "" : imagePath;
         }
     }
 

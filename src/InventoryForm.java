@@ -1,8 +1,16 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class InventoryForm {
     private static final String[] ITEM_CATEGORIES = {
@@ -40,6 +48,9 @@ public class InventoryForm {
     private JTextField addAisleField;
     private JTextField addRackField;
     private JTextField addBinField;
+    private JLabel addImagePreviewLabel;
+    private JLabel addImagePathLabel;
+    private File addSelectedImageFile;
 
     private JComboBox<String> editLookupBox;
     private JTextField editNameField;
@@ -49,6 +60,10 @@ public class InventoryForm {
     private JTextField editAisleField;
     private JTextField editRackField;
     private JTextField editBinField;
+    private JLabel editImagePreviewLabel;
+    private JLabel editImagePathLabel;
+    private String editImagePath = "";
+    private File editSelectedImageFile;
     private JLabel editSelectedItemLabel;
 
     private JTextField searchField;
@@ -238,6 +253,8 @@ public class InventoryForm {
         addAisleField = new JTextField();
         addRackField = new JTextField();
         addBinField = new JTextField();
+        addImagePreviewLabel = createImagePreviewLabel();
+        addImagePathLabel = createImagePathLabel();
 
         JButton saveButton = createActionButton(userRole == UserRole.STAFF ? "Save Stock-In Item" : "Save Item");
         saveButton.addActionListener(event -> handleAddItem());
@@ -251,7 +268,14 @@ public class InventoryForm {
                 "Price", addPriceField,
                 "Aisle", addAisleField,
                 "Rack", addRackField,
-                "Bin", addBinField
+                "Bin", addBinField,
+                "Item Picture", createImagePickerPanel(
+                        addImagePreviewLabel,
+                        addImagePathLabel,
+                        "Add Picture",
+                        this::chooseAddImage,
+                        this::clearAddImage
+                )
         )), BorderLayout.CENTER);
         panel.add(createButtonRow(saveButton), BorderLayout.SOUTH);
         return panel;
@@ -278,6 +302,8 @@ public class InventoryForm {
         editAisleField = new JTextField();
         editRackField = new JTextField();
         editBinField = new JTextField();
+        editImagePreviewLabel = createImagePreviewLabel();
+        editImagePathLabel = createImagePathLabel();
 
         JButton updateButton = createActionButton("Update Item");
         updateButton.addActionListener(event -> handleEditItem());
@@ -296,7 +322,14 @@ public class InventoryForm {
                 "Price", editPriceField,
                 "Aisle", editAisleField,
                 "Rack", editRackField,
-                "Bin", editBinField
+                "Bin", editBinField,
+                "Item Picture", createImagePickerPanel(
+                        editImagePreviewLabel,
+                        editImagePathLabel,
+                        "Edit Picture",
+                        this::chooseEditImage,
+                        this::clearEditImage
+                )
         )), BorderLayout.CENTER);
         panel.add(createButtonRow(updateButton), BorderLayout.SOUTH);
         return panel;
@@ -415,6 +448,56 @@ public class InventoryForm {
         return scrollPane;
     }
 
+    private JLabel createImagePreviewLabel() {
+        JLabel label = new JLabel("No picture", SwingConstants.CENTER);
+        label.setPreferredSize(new Dimension(150, 104));
+        label.setMinimumSize(new Dimension(150, 104));
+        label.setOpaque(true);
+        label.setBackground(new Color(248, 250, 252));
+        label.setForeground(new Color(100, 116, 139));
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        label.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225)));
+        return label;
+    }
+
+    private JLabel createImagePathLabel() {
+        JLabel label = new JLabel("No picture selected.");
+        label.setForeground(ModuleTheme.SURFACE_TEXT);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        return label;
+    }
+
+    private JPanel createImagePickerPanel(
+            JLabel previewLabel,
+            JLabel pathLabel,
+            String chooseButtonText,
+            Runnable chooseAction,
+            Runnable clearAction
+    ) {
+        JPanel panel = new JPanel(new BorderLayout(12, 0));
+        panel.setOpaque(false);
+
+        JPanel detailPanel = new JPanel();
+        detailPanel.setOpaque(false);
+        detailPanel.setLayout(new BoxLayout(detailPanel, BoxLayout.Y_AXIS));
+        detailPanel.add(pathLabel);
+        detailPanel.add(Box.createVerticalStrut(10));
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        buttons.setOpaque(false);
+        JButton chooseButton = createSecondaryButton(chooseButtonText);
+        JButton clearButton = createSecondaryButton("Remove Picture");
+        chooseButton.addActionListener(event -> chooseAction.run());
+        clearButton.addActionListener(event -> clearAction.run());
+        buttons.add(chooseButton);
+        buttons.add(clearButton);
+        detailPanel.add(buttons);
+
+        panel.add(previewLabel, BorderLayout.WEST);
+        panel.add(detailPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
     private JTextArea createTextArea() {
         JTextArea area = new JTextArea();
         ModuleTheme.styleTextArea(area);
@@ -464,6 +547,7 @@ public class InventoryForm {
         addAisleField.setText("");
         addRackField.setText("");
         addBinField.setText("");
+        clearAddImage();
         contentLayout.show(contentPanel, ADD_CARD);
     }
 
@@ -479,6 +563,9 @@ public class InventoryForm {
         editAisleField.setText("");
         editRackField.setText("");
         editBinField.setText("");
+        editSelectedImageFile = null;
+        editImagePath = "";
+        setImagePreview(editImagePreviewLabel, editImagePathLabel, "");
         loadedEditItem = null;
         contentLayout.show(contentPanel, EDIT_CARD);
     }
@@ -499,6 +586,163 @@ public class InventoryForm {
         contentLayout.show(contentPanel, DELETE_CARD);
     }
 
+    private void chooseAddImage() {
+        File selectedImage = chooseImageFile();
+        if (selectedImage == null) {
+            return;
+        }
+        addSelectedImageFile = selectedImage;
+        setImagePreview(addImagePreviewLabel, addImagePathLabel, selectedImage);
+        statusLabel.setForeground(new Color(46, 125, 50));
+        statusLabel.setText("Picture selected for new item.");
+    }
+
+    private void clearAddImage() {
+        addSelectedImageFile = null;
+        setImagePreview(addImagePreviewLabel, addImagePathLabel, "");
+    }
+
+    private void chooseEditImage() {
+        File selectedImage = chooseImageFile();
+        if (selectedImage == null) {
+            return;
+        }
+        editSelectedImageFile = selectedImage;
+        setImagePreview(editImagePreviewLabel, editImagePathLabel, selectedImage);
+        statusLabel.setForeground(new Color(46, 125, 50));
+        statusLabel.setText("Picture selected for item update.");
+    }
+
+    private void clearEditImage() {
+        editSelectedImageFile = null;
+        editImagePath = "";
+        setImagePreview(editImagePreviewLabel, editImagePathLabel, "");
+    }
+
+    private File chooseImageFile() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new FileNameExtensionFilter("Image files (*.png, *.jpg, *.jpeg, *.gif)", "png", "jpg", "jpeg", "gif"));
+        int result = chooser.showOpenDialog(mainPanel);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+
+        File selectedFile = chooser.getSelectedFile();
+        if (selectedFile == null || !selectedFile.isFile()) {
+            showError("Select a valid image file.");
+            return null;
+        }
+        try {
+            if (javax.imageio.ImageIO.read(selectedFile) == null) {
+                showError("Selected file is not a supported image.");
+                return null;
+            }
+        } catch (IOException exception) {
+            showError("Could not load selected image.");
+            return null;
+        }
+        return selectedFile;
+    }
+
+    private String storeSelectedImage(File selectedImage, String itemId, String itemName, String existingPath) throws IOException {
+        if (selectedImage == null) {
+            return existingPath == null ? "" : existingPath;
+        }
+
+        Path assetsDir = Path.of("assets");
+        Files.createDirectories(assetsDir);
+
+        String extension = imageExtension(selectedImage.getName());
+        String baseName = sanitizedImageName(itemId == null || itemId.isBlank() ? itemName : itemId);
+        Path destination = assetsDir.resolve(baseName + "-" + System.currentTimeMillis() + extension);
+        Files.copy(selectedImage.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+        return destination.toString().replace(File.separatorChar, '/');
+    }
+
+    private String imageExtension(String fileName) {
+        int dotIndex = fileName == null ? -1 : fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            return ".png";
+        }
+        String extension = fileName.substring(dotIndex).toLowerCase(Locale.US);
+        return switch (extension) {
+            case ".jpg", ".jpeg", ".gif", ".png" -> extension;
+            default -> ".png";
+        };
+    }
+
+    private String sanitizedImageName(String value) {
+        String sanitized = value == null ? "" : value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "-");
+        sanitized = sanitized.replaceAll("^-+|-+$", "");
+        if (sanitized.isBlank()) {
+            return "item-picture";
+        }
+        return sanitized.length() > 48 ? sanitized.substring(0, 48) : sanitized;
+    }
+
+    private void setImagePreview(JLabel previewLabel, JLabel pathLabel, String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            clearImagePreview(previewLabel, pathLabel);
+            return;
+        }
+        setImagePreview(previewLabel, pathLabel, imageFile(imagePath), imagePath);
+    }
+
+    private void setImagePreview(JLabel previewLabel, JLabel pathLabel, File imageFile) {
+        setImagePreview(previewLabel, pathLabel, imageFile, imageFile == null ? "" : imageFile.getName());
+    }
+
+    private void setImagePreview(JLabel previewLabel, JLabel pathLabel, File imageFile, String displayPath) {
+        if (previewLabel == null || pathLabel == null) {
+            return;
+        }
+        if (imageFile == null || !imageFile.isFile()) {
+            clearImagePreview(previewLabel, pathLabel);
+            return;
+        }
+
+        try {
+            BufferedImage image = javax.imageio.ImageIO.read(imageFile);
+            if (image == null) {
+                clearImagePreview(previewLabel, pathLabel);
+                showError("Selected file is not a supported image.");
+                return;
+            }
+            int targetWidth = 150;
+            int targetHeight = 104;
+            double scale = Math.min((double) targetWidth / image.getWidth(), (double) targetHeight / image.getHeight());
+            int scaledWidth = Math.max(1, (int) Math.round(image.getWidth() * scale));
+            int scaledHeight = Math.max(1, (int) Math.round(image.getHeight() * scale));
+            Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+            previewLabel.setIcon(new ImageIcon(scaledImage));
+            previewLabel.setText("");
+            pathLabel.setText(displayPath == null || displayPath.isBlank() ? imageFile.getName() : displayPath);
+            pathLabel.setToolTipText(imageFile.getAbsolutePath());
+        } catch (IOException exception) {
+            clearImagePreview(previewLabel, pathLabel);
+            showError("Could not load selected image.");
+        }
+    }
+
+    private File imageFile(String imagePath) {
+        File file = new File(imagePath);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        return new File(System.getProperty("user.dir"), imagePath);
+    }
+
+    private void clearImagePreview(JLabel previewLabel, JLabel pathLabel) {
+        if (previewLabel != null) {
+            previewLabel.setIcon(null);
+            previewLabel.setText("No picture");
+        }
+        if (pathLabel != null) {
+            pathLabel.setText("No picture selected.");
+            pathLabel.setToolTipText(null);
+        }
+    }
+
     private void handleAddItem() {
         try {
             String id = addIdField.getText().trim();
@@ -517,7 +761,8 @@ public class InventoryForm {
                 throw new IllegalArgumentException("Aisle, rack, and bin are required.");
             }
 
-            DataStorage.Item newItem = new DataStorage.Item(id, name, category, quantity, price, aisle, rack, bin);
+            String imagePath = storeSelectedImage(addSelectedImageFile, id, name, "");
+            DataStorage.Item newItem = new DataStorage.Item(id, name, category, quantity, price, aisle, rack, bin, imagePath);
             DataStorage.getInstance().addItem(newItem);
             JOptionPane.showMessageDialog(
                     mainPanel,
@@ -546,6 +791,9 @@ public class InventoryForm {
             editAisleField.setText("");
             editRackField.setText("");
             editBinField.setText("");
+            editImagePath = "";
+            editSelectedImageFile = null;
+            setImagePreview(editImagePreviewLabel, editImagePathLabel, "");
             return;
         }
 
@@ -563,6 +811,9 @@ public class InventoryForm {
         editAisleField.setText(loadedEditItem.aisle);
         editRackField.setText(loadedEditItem.rack);
         editBinField.setText(loadedEditItem.binCode);
+        editImagePath = loadedEditItem.imagePath;
+        editSelectedImageFile = null;
+        setImagePreview(editImagePreviewLabel, editImagePathLabel, editImagePath);
         statusLabel.setForeground(new Color(46, 125, 50));
         statusLabel.setText("Loaded item " + loadedEditItem.id + ".");
     }
@@ -600,9 +851,13 @@ public class InventoryForm {
                 throw new IllegalArgumentException("Aisle, rack, and bin are required.");
             }
 
-            DataStorage.Item updatedItem = new DataStorage.Item(loadedEditItem.id, name, category, quantity, price, aisle, rack, bin);
+            String imagePath = storeSelectedImage(editSelectedImageFile, loadedEditItem.id, name, editImagePath);
+            DataStorage.Item updatedItem = new DataStorage.Item(loadedEditItem.id, name, category, quantity, price, aisle, rack, bin, imagePath);
             DataStorage.getInstance().updateItem(loadedEditItem.id, updatedItem);
             loadedEditItem = updatedItem;
+            editImagePath = imagePath;
+            editSelectedImageFile = null;
+            setImagePreview(editImagePreviewLabel, editImagePathLabel, editImagePath);
             statusLabel.setForeground(new Color(46, 125, 50));
             statusLabel.setText("Item " + updatedItem.id + " updated successfully.");
         } catch (Exception ex) {
@@ -645,6 +900,7 @@ public class InventoryForm {
             builder.append("Category: ").append(item.category).append('\n');
             builder.append("Quantity: ").append(item.quantity).append('\n');
             builder.append("Price: ").append(formatCurrency(item.price)).append("\n\n");
+            builder.append("Picture: ").append(item.imagePath == null || item.imagePath.isBlank() ? "No picture" : item.imagePath).append('\n');
             builder.append("Location: Aisle ").append(item.aisle).append(" / Rack ").append(item.rack).append(" / Bin ").append(item.binCode).append("\n\n");
         }
         searchResultsArea.setText(builder.toString().trim());
@@ -672,6 +928,7 @@ public class InventoryForm {
                 "Category: " + item.category + "\n" +
                 "Quantity: " + item.quantity + "\n" +
                 "Price: " + formatCurrency(item.price) + "\n" +
+                "Picture: " + (item.imagePath == null || item.imagePath.isBlank() ? "No picture" : item.imagePath) + "\n" +
                 "Location: Aisle " + item.aisle + " / Rack " + item.rack + " / Bin " + item.binCode
         );
         statusLabel.setForeground(new Color(46, 125, 50));

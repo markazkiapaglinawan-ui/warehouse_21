@@ -57,11 +57,25 @@ CREATE TABLE IF NOT EXISTS `items` (
     `category` VARCHAR(100) NULL,
     `quantity` INT NOT NULL DEFAULT 0,
     `price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `image_path` VARCHAR(255) NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_items_item_code` (`item_code`)
 );
+
+SET @items_image_path_exists = (
+    SELECT COUNT(*)
+    FROM information_schema.columns
+    WHERE table_schema = 'login_1' AND table_name = 'items' AND column_name = 'image_path'
+);
+SET @items_image_path_sql = IF(@items_image_path_exists = 0,
+    'ALTER TABLE `items` ADD COLUMN `image_path` VARCHAR(255) NULL',
+    'SELECT 1'
+);
+PREPARE items_image_path_stmt FROM @items_image_path_sql;
+EXECUTE items_image_path_stmt;
+DEALLOCATE PREPARE items_image_path_stmt;
 
 CREATE TABLE IF NOT EXISTS `orders` (
     `id` INT NOT NULL AUTO_INCREMENT,

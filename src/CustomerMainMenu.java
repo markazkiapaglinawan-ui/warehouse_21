@@ -1006,7 +1006,9 @@ public class CustomerMainMenu {
                     item.category == null || item.category.isBlank() ? "General" : item.category,
                     item.price,
                     item.quantity,
-                    imageForItemName(item.name, item.category)
+                    item.imagePath == null || item.imagePath.isBlank()
+                            ? imageForItemName(item.name, item.category)
+                            : item.imagePath
             );
             products.add(product);
             cart.put(product, 0);
