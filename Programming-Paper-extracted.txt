@@ -1,0 +1,918 @@
+Rent a Car System
+
+
+
+A Project Presented to the Faculty of
+
+College of Computer, Information and Communication Technology Cebu Technological University - Main Campus
+
+In Partial Fulfillment
+
+Of the Requirements for the Subject Computer Programming
+
+Researchers: Abing, Nicole Jane Aguhar, Ryan Beran, Jane Rose
+Cardona, Angel Trisha Illustrisimo, Charmaine Lamprea, Sheanne Joi
+
+Narcisan S. Galamiton, PhD D. Adviser
+
+May 2026
+
+DEDICATION
+
+      This Rent a Car System is wholeheartedly dedicated to our respective families and friends, whose constant support and encouragement have been essential for this work. Their unwavering belief in us and their presence gave us the strength and motivation needed to overcome challenges and complete this project.We extend our heartfelt dedication to our mentor, Ms. Narcisan S. Galamition, whose guidance and expertise have been instrumental to our learning and the development of this system. Her insightful feedback, patient instruction, and commitment to our growth have been deeply appreciated.
+      Furthermore, we dedicate this work to the healthcare providers and patients who will benefit from a more effective clinic management process. It is our sincere hope that this system will contribute to better care, streamlined operations, and ultimately bring about positive change for the people it serves.
+      To our future selves and fellow students, may this work serve as a reminder that perseverance and teamwork can turn simple ideas into meaningful innovations.
+      And finally, above all, we dedicate this HealthTrack Clinic System to the Almighty God, who has granted us the strength, wisdom, and perseverance to undertake and complete this task. For the inspiration, clarity of thought, and opportunities provided, we offer our deepest gratitude. We offer back to Him all the glory and honor.
+
+ACKNOWLEDGEMENT
+
+      We extend our sincere appreciation to everyone who played a role in the development and completion of our final project, Rent a Car System.
+      First and foremost, we express our deepest gratitude to our families for their love, patience, and unwavering support throughout this journey.
+      We also offer our heartfelt thanks to our instructors and advisers. Their guidance, expertise, and encouragement were essential in helping us accomplish this study.
+      Our sincere appreciation goes as well to our classmates and friends for their assistance, suggestions, and motivation during challenging moments we have felt during the process of development of the project .
+      We would like to acknowledge our project group members, for their dedication, hard work, and teamwork. This project would not have been possible without the shared effort, long hours, and commitment of everyone involved.
+      Finally, we thank God for granting us the wisdom, strength, and perseverance that sustained us from beginning to end. His guidance, protection, and steady presence were our foundation from the start of this project until its successful completion.
+
+TABLE OF CONTENTS:
+
+DEDICATION	i
+ACKNOWLEDGEMENT	ii
+TABLE OF CONTENTS	iii
+LIST OF TABLES	iv
+LIST OF FIGURES	iv
+CHAPTER 1: INTRODUCTION
+INTRODUCTION...	1
+OBJECTIVES OF THE PROJECTS	3
+SPECIFIC OBJECTIVES	3
+SCOPE AND LIMITATIONS OF THE PROJECT	5
+SIGNIFICANCE OF THE PROJECT	7
+CHAPTER 2: REVIEW OF RELATED LITERATURE
+REVIEW OF LITERATURE...	6
+REVIEW OF STUDIES	9
+CHAPTER 3: METHODOLOGY
+ENVIRONMENT	16
+LOCALE...	16
+TECHNICAL FEASIBILITY	17
+HARDWARE AND SOFTWARE SPECIFICATION...	17
+OTHER TECHNOLOGIES BEING USED	18
+TIMELINE FEASIBILITY	18
+GANTT CHART	18
+DESIGN...	19
+OUTPUT AND USER-INTERFACE DESIGN...	19
+DEVELOPMENT	24
+SOFTWARE SPECIFICATION...	24
+HARDWARE SPECIFICATION...	24
+CHAPTER 4: CONCLUSION AND RECOMMENDATION
+CONCLUSION...	25
+RECOMMENDATIONS	26
+BIBLIOGRAPHY
+COMPARATIVE MATRIX.	28
+PROGRAM WORKFLOW	29
+REFERENCES	54
+
+
+LIST OF TABLES:
+
+Table 1: Timeline Feasibility. Gantt Chart...	18
+
+Table 2: Comparative Matrix: Specific Features...	13
+
+LIST OF FIGURES:
+
+Figure 1: ANIS Transport/Home page.	12
+Figure 2: Facebook Marketplace...	13
+Figure 3: Hertz Car Rental/Home page...	14
+Figure 4: Authentication Form. Sign-Up Form...	19
+
+Figure 5: Authentication Form. Login Form...	20
+Figure 6: User/Renter Forms. Booking Request Forms...	20
+Figure 7: User/Renter Forms. Profile Update Form...	21
+Figure 8: Owner/Lister Form. Vehicle Listing Form...	21
+Figure 9: Admin Forms. Approval/ Rejection Form...	22
+Figure 10: Admin Forms. Support Ticket Response Form...	22
+Figure 11: Authentication Program Workflow	29
+Figure 12: Flowchart for Login and Sign up	29
+Figure 13: Program workflow for Users...	30
+Figure 14: Flowchart for Users...	31
+Figure 15: Program workflow of Admin...	32
+Figure 16: Login Page...	33
+Figure 17: Sign-up Page.	34
+Figure 18: Discovery Page...	34
+Figure 19:Inbox...	35
+Figure 20: Renter's Inbox...	36
+Figure 21: Account Upgrade.	36
+Figure 22: Account Upgrade Confirmation...	37
+Figure 23: Listing Form...	38
+Figure 24: Photo Upload...	39
+Figure 25: Car Type Selection...	40
+Figure 26: Transmission Type Selection...	41
+
+Figure 27: Fuel Type Selection...	41
+Figure 28: Seater Selection...	42
+Figure 29: Vehicle Condition Selection...	42
+Figure 30: Listing Created...	43
+Figure 31: Settings Manage Listing...	43
+Figure 32: Settings Activity Log...	44
+Figure 33: Filter by Activity	45
+Figure 34: Account Settings Interface...	46
+Figure 35: Edit Profile	46
+Figure 36: Update Profile...	47
+Figure 37: Delete Confirmation	47
+Figure 38: Delete Confirmation for Car Listing Management...	48
+Figure 39: Overview	48
+Figure 40: Listing Approvals...	49
+Figure 41: User Management...	49
+Figure 42: Bookings Management...	50
+Figure 43: Supports Tickets Management...	50
+APPENDICES
+SOURCE CODE...	55
+
+CHAPTER I INTRODUCTION
+
+Rationale of the Study
+      A Car Rental is a service that temporarily rents or provides flexible transportation options to the individuals, like an automobile, for a specific period of time. Access to reliable vehicles remains one of the most important needs in communities, yet many customers face challenges in navigating rental processes. Customers are often forced to find rental vehicles on different social media platforms, such as posts, groups, and pages on Facebook or in Facebook Marketplace. Additionally, customers can also find Airbnb for cars which leads to consuming valuable time, as many of the vehicles they try to rent are not suitable for their preferences or unavailable on the dates they require. As a result, customers must repeatedly search for alternatives, leading to frustration and inefficiency.
+       Previously, the traditional method of managing car rentals took hours of visits to the car rental counters or calls, and it was time consuming and inconvenient for customers. Also, using manual record-keeping is prone to errors and inefficiency. This approach encourages community-driven rental transactions, offering flexibility for both car owners who earn extra income by renting out idle cars and renters who gain access to affordable vehicle options. According to Archive (2020), having a web-based booking system in car rentals provides a seamless workflow in the booking process and contributes to greater customer satisfaction to the customer and operational effectiveness in the vehicle rental business.
+
+      The proposed Rent a Car System aims to provide customers with a seamless and personalized user experience, featuring a wide range of vehicle options and a secure, efficient rental process (Nobel, 2023). It also offers convenience, flexibility, and affordability to customers. By integrating customer information with a directory of available cars and their categories, such as sedan, SUV, and van, the system ensures that individuals or customers are directed to the right vehicle without confusion or delay. It reduces the risk of double bookings and unnecessary waiting times.
+      Furthermore, the Rent a Car System integrates users who can act as owners and renters. Owners can submit a vehicle to the system that they want to rent while also being a renter who can book a vehicle. It also integrates admin users, allowing them to manage car approvals and view system-wide reports. With these features, it improves efficiency and customer satisfaction across the entire rental process with the help of the technology system, and it also modernizes transportation services.
+
+OBJECTIVES OF THE PROJECT
+
+Objectives:
+
+      The main objective of this study is to design and develop a Rent a Car System using the Java programming language. This system aims to digitize the traditional car rental process, allowing customers to conveniently browse, book, manage vehicle rental online, while enabling administration to efficiently manage vehicle, bookings, and customer records.
+Specific Objectives:
+
+      To achieve the general objective, the researchers aim to accomplish the following specific goals:
+1. To develop a user-friendly graphical user interface (GUI) for car rental transactions.
+1.1. To	design	an	intuitive	interface using Java Swing for easy navigation.
+1.2. To ensure that users can efficiently perform actions such as browsing, booking, and listing cars.
+2. To implement a secure account authentication and user management system.
+2.1. To allow users to register and log in using email and password.
+
+2.2. To enable a single user to act as a car owner, renter, or both within the system.
+
+2.3. To maintain secure user sessions during system use.
+
+3. To develop a car listing module for owners
+
+3.1. To allow users to post car listings by entering complete details and rental rates.
+3.2. To implement a listing limitation for free users and unlimited access for pro users.
+3.3. To enable users to manage and monitor their listings through a personal dashboard.
+4. To develop a browsing and system for renters.
+
+4.1. To allow users to browse available cars in the system.
+
+4.2. To include search and filter features for easier selection.
+
+4.3. To enable users to request, confirm and track their bookings.
+
+5. To simulate the actual car rental process.
+
+5.1. To allow users to browse available cars in the system.
+
+5.2. To include search and filter features for easier selection.
+
+5.3. To enable users to request, confirm and track the
+
+6. To implement a membership and payment feature.
+
+6.1. To provide a Pro membership and added benefits.
+
+6.2. To give discounts or free booking options for Pro users.
+
+6.3. To allow users to upgrade their accounts.
+
+7. To	apply	object-oriented	programming	(OOP)	principles	and	data management.
+
+7.1. To design modular Java classes for system components.
+
+7.2. To manage and store transaction records, listing, and user data efficiently.
+7.3. To provide simple reports or summaries of activities in the system.
+
+
+SCOPE AND LIMITATIONS OF THE PROJECT
+
+ScopeLimitationsThe study focuses on the development of a Rent a Car System using Java programming language.The system is designed mainly for desktop use and does not support mobile application versions.It allows users to register, log in, and manage their accounts securely.Real-time GPS tracking of vehicle is not includedThe system enables car owners to post and manage vehicle listing.
+The system relies on an online database and does not support offline functionality at this time.Customers can browse, and search available cars for rent.The system does not provide insurance processing or legal rental contract automation.Car	owners  can  create  listings  by  addingVehicle	information	depends	on	the
+vehicle details such as car type, transmission, fuel type, seating capacity, condition, price, and photos.accuracy of data entered by users or owners.Users can act as renters, car owners, or both within the system.Membership upgrade is for system simulation and may not connect to actual subscription services.Renters can request bookings, confirm reservations, and communicate with owners through the inbox feature.Online payment processing is not fully integrated and may only use simulated transactions.The system stores user data, booking records, and vehicle details in an organized manner.Notifications may be limited to in-system alerts onlyUsers can upgrade accounts from Free to Pro membership to access premium features such as unlimited listings and priority placement.The	messaging	feature	is	limited	to in-system communication only.Users can manage profiles, update account information, and monitor activity logs.Only authorized administrators can access management modules.
+Significance of the Project
+
+      The proposed Rent a Car System will be beneficial to different individuals and groups involved in vehicle rental services. It aims to improve the traditional rental process by providing a faster, more organized, and more convenient way of managing car rental transactions.
+
+For Customers / Renters:
+
+      The system will help customers easily search, select, and book available vehicles based on their needs. It saves time and effort by reducing the need to visit rental offices or search through different social media platforms.
+
+For Car Owners:
+
+      Vehicle owners will benefit from the system by having a platform where they can list their cars for rent, manage bookings, and monitor rental transactions. This can also provide them with an additional source of income.
+
+For Administrators:
+
+      The system will assist administrators in managing user accounts, vehicle listings, reservations, and records efficiently. It will also help reduce manual work and improve monitoring of daily operations.
+
+For Business Owners:
+
+      For car rental businesses, the system can improve customer service, increase operational efficiency, and organize records properly. It can also help attract more customers through a modern and convenient rental process.
+
+For Researchers and Students:
+
+      This study will serve as a useful reference for students and future researchers who plan to develop similar systems. It also demonstrates the practical application of Java programming and system development concepts.
+
+For Future Developers:
+
+      The project may serve as a function for future improvements such as mobile application integration, online payment systems, GPS tracking and advanced booking features.
+
+CHAPTER 2
+
+REVIEW OF RELATED LITERATURE AND STUDIES
+
+Related Literature
+
+      A car rental system is designed to provide users with an efficient and convenient platform for renting vehicles through a computerized process. It allows customers to browse available cars, make reservations, and manage rental transactions in an organized and automated manner, reducing the need for manual processes and in-person transactions (Yadav et al., 2021). In another study, a web-based online car rental system improves accessibility by allowing users to book vehicles anytime and anywhere through an internet-based platform, reducing the limitations of traditional rental methods and enhancing customer convenience (Singh et al., 2020). Similarly, the development of web-based car rental management systems highlights the importance of automation in handling rental operations including booking, vehicle tracking, and transaction management (Ogbiti et al., 2024).
+
+      The SCREMS - Smart Car Rental Management System shows that developing a smart and automated car rental platform improves the overall efficiency of vehicle rental operations by integrating features such as online booking, vehicle management, and user authentication within a centralized system (Aldinovandi, 2025). The system enhances user convenience by allowing customers to easily access available vehicles, make reservations, and manage rental transactions in a more organized and automated process  compared  to  traditional  manual  methods.  The  study  emphasizes  that
+
+implementing a smart rental management system improves operational accuracy, reduces human errors, and provides better control for administrators in managing vehicle inventory and rental records
+
+      The Rental Car Management System emphasizes that developing a computerized car rental platform significantly improves the efficiency of managing vehicle rentals by automating key processes such as user registration, vehicle selection, booking management, and administrative control (Keeriti & Kumar, 2024). The system enhances customer convenience by allowing users to easily browse available vehicles based on preferences and availability, while also ensuring secure transactions and organized record management. In addition, the implementation of features such as real-time vehicle tracking, automated maintenance reminders, and billing management improves overall operational efficiency and reduces manual workload. It highlights that integrating reporting and analytics tools supports better decision-making for administrators and enhances service quality, resulting in improved user satisfaction and more efficient rental operations.
+
+      The Decision Support System for pricing in car rental companies emphasizes that rental firms need accurate and competitive pricing strategies to improve profitability and market performance. The research found factors such as market growth, operational risks, and changing business conditions require car rental to adopt systems that can support cost estimation and pricing decisions using data-driven approaches (Cunha &
+
+de Souza, 2015). Similarly, the development of a Vehicle Management System highlights that traditional manual processes in managing vehicle rental often lead to issues such as inaccurate records, long processing time reports, incorrect vehicle bookings. To address these problems, the study implemented a computerized membership-based system using a relational database to improve data organization, accuracy, and efficiency in rental operations (Ahmed et al., 2019).
+
+      The study on an Online Car Rental System using web technology highlights that implementing a web-based platform significantly improves the accessibility and efficiency of a car rental service by allowing customers to browse available vehicles, view description and price, and make reservations anytime and anywhere through multiple devices (Mohite et al., 2022). The system also enhances user experience by providing essential functionalities such as user registration, login, and rental management, while enabling administrators to efficiently manage car listings, update pricings, and control rental operations through centralized systems. Similarly, another web-based car rental business management system emphasizes that integrating booking functions with centralized data management improves transaction accuracy, reduces risks associated with manual booking processes, and provides better protection for both customers and car owners by ensuring proper record tracking and secure data handling (Rahman & Rusli, 2023). Furthermore, an online rental system concludes that automating the rental process through a computerized system improves operational efficiency and eliminates the limitations of manual procedure by allowing customers to
+
+book vehicle based on their requirements, including vehicle type and rental duration, resulting in a more convenient and user-friendly rental experience (Archana, 2019).
+
+Related Studies
+
+      This section explores existing systems, foundational concepts, and analogous features that researchers have found to share similarities with the Rent a Car System under development. Examining these related areas, as identified by researchers can provide valuable context, highlight established approaches, and potentially after insights for enhancing the current system's design and functionality. The following are as follows:
+ANIS Transport
+
+Figure 1: ANIS Transport/Home page
+
+      ANIS Transport is an online, web based service system designed to provide excellent, affordable van and car rental in Manila, Quezon City. It offers a wide variety
+
+of features, such as vehicle options with different fleet categories and rental flexibility. They also provide complete car rental services, including private services for customers with or without a driver, corporate accounts for monthly car maintenance, car rescue, etc., and lastly, shuttle services for the largest companies in the Luzon area. According to ANIS Transport, they distinguish their system by affordability, convenience, and flexibility. Meanwhile, the Rent a Car system focuses on digital management and automation, allowing it to provide a technological solution in terms of efficiency, transparency, and automation.
+
+Facebook Marketplace
+
+
+Figure 2: Facebook Marketplace
+
+      Facebook Marketplace is a widely used online platform that allows users to buy, sell, and rent items, including vehicles. It allows users to manually search in the search box before browsing and listing the vehicles. Additionally, it provides a feature for
+
+filtering locations and directly messaging the owners of vehicles that the users want to rent. Unlike a Rent a Car system, Facebook Marketplace does not have a structured dashboard dedicated to renting vehicles; instead, it is mixed with different products, requiring users to search manually for what they want. While it offers convenience through accessibility and ease of contacting owners, it lacks specialized important functions such as customer registration and booking management. Hence, the Rent a Car system emphasizes more formal administrative and technological features, like browsing cars before filling out forms and offering a membership fee that allows users to check some reviews.
+
+Hertz
+
+
+Figure 3: Hertz Car Rental/Home page
+
+      Hertz Car Rental Services is an internationally recognized vehicle rental company, and it also has a website that is specifically designed for the Philippines. It offers
+
+features such as online reservations, airport pick-up and drop-off, travel guides, special offers, and chauffeur services. The system can also provide discounts when booking by using a discount code. Their main dashboard does not show pictures of vehicles. You need to provide the information first, especially the pick-up location, before finding your desired vehicle. With the help of this system, it is evident that a platform like Hertz enhances customer experience by emphasizing brand reliability, global reach, and premium delivery service. Hence, the Rent a Car system has features of customer registration, vehicle browsing with characteristics that already provide information on whether the vehicle has an option for a driver or not, booking management, and payment confirmation. The Rent a Car system also added a unique feature, which is the membership fee that allows users to upgrade to a Pro account, unlocking exclusive tools and perks. In terms of roles, the car owners can rent out their idle cars, and they can also be renters if they want to rent a car within the system.
+
+CHAPTER 3 METHODOLOGY
+      This chapter outlines the systematic processes and technical frameworks utilized to build a Rent a Car System. It covers the development environment, the feasibility of the architecture, and the specific design to development pipeline used to transition from Figma wireframes to a functional Java Swing application.
+
+
+Environment
+
+      The Rent a Car System was developed in a controlled academic environment using desktop-based tools. The system utilizes Java programming with Java Swing for graphical user interface (GUI) and MySQL for database management. Development was conducted using an integrated development environment (IDE) such as NetBeans, ensuring efficient coding, debugging, and testing.
+
+Locale
+
+      The system is intended for use within the local community, particularly in Cebu City. It focuses on connecting local car owners and renters within the same geographic area. The system is designed to support local rental practices and pricing.
+Development Setting
+
+      The system was engineered within the College of Computer, Information and Communication Technology (CCICT) at Cebu Technological University - Main
+
+Campus. This environment provided the necessary high-speed network and workstation stability required for intensive Java compilation and database testing and peer review.
+
+Technical Feasibility
+
+      The feasibility of this study is established through the utilization of mature and industry-standard technologies. The integration of Java and MySQL provides a reliable foundation capable of handling real-time rental transactions and consistent data storage. Given the team's proficiency in object-oriented programming and database management, the project's technical requirements are well-aligned with the research team's capabilities, ensuring a smooth transition from conceptualization to development.
+
+Hardware and Software Specification
+
+      To build and run the system, we used specific tools. For software, we used Java (JDK) to write code and MySQL to store information like user accounts and car details. We used NetBeans as our main working space for coding. For hardware, we used computers with at least an i3 processor and 8GB of RAM to make sure the program runs fast. We also used an SSD for storage so that the app opens quickly and saves data without lagging.
+
+Other Technologies Being Used
+
+      We used several other tools to improve the project. Java Swing was used to create the buttons, menus and the overall look of the app. Before we started coding, we used Figma to design the screens and build a prototype.
+
+Timeline Feasibility
+
+      The project was completed within the semester. The researchers divided the work into different parts such as planning, designing, coding, and testing. Each part was done step by step to make sure the system was completed on time.
+
+Gantt Chart
+
+
+Table 1: Timeline Feasibility. Gantt Chart
+
+Design
+
+      The interface was designed using a clean and simple philosophy. The team focused on a professional look by using a Maroon and Charcoal color pallette. The design process moved from simple drawings to a real Java project that is easy for anyone to use.
+
+Authentication Forms
+
+      These are the entry points of your system that ensure security and identify the user's role.
+
+
+
+Figure 4: Authentication Form. Sign-Up Form
+
+      The sign-up form allows new users to create an account by providing necessary personal information such as email and password. This process ensures that only registered users can access the system.
+
+
+
+
+
+
+
+
+Figure 5: Authentication Form. Login Form
+
+      The login form allows existing users to securely access the system by entering their registered credentials. It also helps maintain secure user sessions and role-based access control.
+
+User / Renter Forms
+
+      The user or renter forms are designed to support customers in browsing and booking available vehicles within the system.
+
+
+
+Figure 6: User/Renter Forms. Booking Request Form
+
+      This form allows users to submit booking requests for selected vehicles based on availability and preference. It ensures a structured and organized reservation process.
+
+
+
+
+Figure 7: User/Renter Forms. Profile Update Form
+
+      This form enables users to update their personal information, ensuring that their account details remain accurate and up to date.
+Owner/ Lister Forms
+
+      The owner or lister forms are intended for users who wish to list their vehicles for rent within the system.
+
+
+Figure 8: Owner/Lister Forms. Vehicle Listing Form
+
+      This form allows car owners to input complete vehicle details such as car type, transmission, seating capacity, fuel type, condition, rental price, and images. This ensures that listings are complete and informative for potential renters.
+
+Admin Forms
+
+      The admin forms are designed for system administrators who manage and oversee the overall operation of the platform.
+
+
+      This form allows administrators to review and either approve or reject vehicle listings or user submissions, ensuring that only valid and appropriate content is displayed in the system.
+
+
+
+Figure 10: Admin Forms. Support Ticket Response Form
+
+      This form enables administrators to respond to user concerns, inquiries, and support requests, ensuring effective communication and system maintenance.
+
+Development
+
+      The development phase focuses on how the system is built and what a computer needs to run the program properly. The team used Java as the main programming language to follow the requirements of our subject this semester. By applying Object-Oriented Programming (OOP) principles, the system is built with a modular structure, ensuring the code is organized, manageable, and easy to update.
+
+Software Specification
+
+      The Rent a Car System is a desktop-based application that is developed using the Java Development Kit(JDK), which provides the environment needed to compile and run the code. The team utilized the Netbeans IDE as the primary development tool to write and debug the program. The graphical user interface is constructed using Java Swing to provide a professional experience, while a MySQL database is integrated to securely store user accounts, car listings, transaction records and any other information.
+
+Hardware Specification
+
+      To ensure stable performance and prevent system lag, the application is optimized for hardware with at least 8GB of RAM and in Intel Core i3 processor or its equivalent.
+
+
+
+
+
+
+Conclusion
+              
+CHAPTER 4 CONCLUSION AND RECOMMENDATION
+
+
+
+      The development and evaluation of the proposed Rent a Car System demonstrate that the study has successfully achieved its primary objective, which is the design and implementation of a desktop-based car rental management system. Through the utilization of Java programming language and MySQL database management, the researchers were able to transform traditional, manual, and fragmented car rental processes into a centralized and automated system that improves efficiency, organization, and accessibility.
+      The system architecture, grounded in Object-Oriented Programming (OOP) principles, ensures modularity, scalability, and maintainability, allowing for future enhancements and system expansion. The implemented core functionalities, including role-based authentication, dynamic vehicle listing, and comprehensive booking management, significantly improve operational workflow and reduce inefficiencies commonly observed in conventional rental systems.
+      In comparison with existing platforms such as ANIS Transport and Facebook Marketplace, the proposed system provides a more specialized and structured solution by integrating a dual-role feature that allows users to function as both car owners and
+
+renters within a unified platform. This feature enhances system flexibility and improves user engagement by supporting multiple rental roles in a single environment.
+      Despite its successful implementation as a functional prototype, the system is subject to several limitations. These include the absence of real-time GPS tracking, reliance on simulated payment processing, and the lack of automated legal contract generation. As such, while the system is suitable for academic and proof-of-concept purposes, further refinement is necessary to meet the requirements of full-scale commercial deployment.
+      Overall, the Rent a Car System presents a viable foundation for digitalizing vehicle rental services and demonstrates the practical application of software engineering principles in solving real-world problems. With future enhancements, the system has the potential to evolve into a more comprehensive and industry-ready rental management platform.
+
+
+Recommendations
+
+      To transition the Rent a Car System from an academic prototype to an industry-ready solution, the researchers propose the following strategic enhancements:
+Add Real GPS Tracking: To make the system safer, we suggest adding real-time GPS tracking so car owners can monitor their vehicles at any time, which builds trust for both parties.
+
+Integrate Real Payment Gateways: Our current system uses simulated payments for testing. Adding real online payment methods (like GCash, Maya, or bank transfers) is the next logical step to make the system ready for actual business transactions.
+Create Digital Contracts: To make every rental official, we suggest adding a feature that automatically generates rental contracts that users can sign electronically, saving everyone time and paperwork.
+Enable Real Subscription & Membership System: Since the membership upgrade is currently for simulation only, future improvements should connect it to real subscription services, allowing users to actually upgrade from Free to Pro accounts and access premium features with real payments.
+Move to Mobile: Right now, the system only works on desktop computers. Moving it to a mobile app would make it much more convenient for users to book cars while they are on the go.
+Add Smart Features: Future updates could include AI suggestions to help people find the right car faster, or dynamic pricing that adjusts rates based on demand.
+Improve Admin Tools & Security: We also recommend strengthening security for user data and creating a more detailed dashboard for admins to track everything happening in the system in real-time.
+
+Add Offline Functionality: Since the system currently relies on an online database, future improvements may include limited offline capabilities, allowing users to access basic features even without internet connection and sync data once reconnected.
+      Overall, these steps will help turn our project from a school requirement into a competitive and professional car rental solution.
+
+COMPARATIVE MATRIX
+
+
+Table 1: Comparative Matrix: Specific Features
+
+
+
+FeaturesRent a Car SystemANIS
+
+Transport Facebook MarketplaceHeartzTOTALOnline Reservation
+
+?
+
+?
+
+?
+
+?
+
+4Catalog Browsing
+
+?
+
+?
+
+?
+
+?
+
+3Promo Engine
+
+?
+
+?
+
+?
+
+?
+
+2Dual-path Feature
+
+?
+
+?
+
+?
+
+?
+
+1
+
+Table 1: Comparative Matrix: Specific Features
+
+PROGRAM WORKFLOW
+
+
+Figure 11: Authentication program workflow
+
+
+Figure 12: FLowchart for Login and Sign up
+
+Authentication
+
+      The system employs a role-based authentication model specifically designed to separate the peer-to-Peer (P2P) rental functions from administrative management. General users can securely log in to browse available vehicles and manage bookings, or utilize the registration module to join the platform, with all credentials verified against
+
+the MySQL database. Conversely, the administrative workflow provides a restricted, high-level interface that allows for the oversight of car inventory and user accounts, ensuring that the Java Swing dashboard remains secure and that management operations are isolated from the standard user experience.
+
+Figure 13: Program workflow for Users
+
+
+
+Figure 14: Flowchart for Users
+
+
+
+Users
+
+The user workflow initiates upon a successful login, directing the client to a
+
+centralized dashboard that serves as the hub for all peer-to-peer (P2P) rental activities. The primary function facilitates car bookings, where users can browse various vehicle categories or act as a car owner by listing their own vehicles to earn revenue, including an option to assign a driver. All coordination occurs within the inbox, where renters can edit or cancel requests and owners can confirm or withdraw bookings. To differentiate
+
+the experience, the system implements a tiered membership: Free users are limited to
+
+5 car listings, while Pro users enjoy unlimited listings, priority placement in search results, and access to a dedicated analytics module to track earnings and performance. This is supported by a notification center that issues digital receipts for successful transactions and alerts for maintenance or help & support ticket responses. Finally, the Account Management module ensures users can update their profile and driver credentials to maintain system compliance.
+
+
+
+Figure 15: Program workflow of Admin
+
+Administrator
+
+      The administrative workflow serves as the central platform command center, granting unrestricted access to the admin dashboard, which is segmented into five core management domains. Through the Verification module, the admin presiding over the
+
+car listing pipeline can approve, reject, or request edits for vehicle submissions while also managing user upgrades and identity verification to ensure platform security. System Management provides granular control over the community, allowing the admin to suspend or delete accounts, manage the global inventory, and perform database maintenance to clear expired sessions. The Support domain functions as the primary hub for user relations, where the admin manages the ticket queue and provides direct responses to queries. For high-level intelligence, the Oversight section allows for real-time monitoring of all active bookings and comprehensive revenue tracking. Finally, the System Configuration module empowers the admin to maintain platform boundaries by setting limits on user tiers and broadcasting essential System Alerts regarding maintenance or critical updates.
+
+STORYBOARD/PROTOTYPE USERS MENU PAGE
+
+Figure 16: Login Page
+
+      The login serves as the primary access point of Rent a Car System, where users are required to enter their credentials to proceed. It features the input fields for email, password, allowing registered users to securely access their accounts. The interface is designed with a simple and modern layout to ensure ease of use and a smooth user experience. The page includes a login button to validate user credentials and a "create account" option for new users who have not yet registered. This ensures that only authorized individuals can access the system while maintaining security and user-specific functionality.
+
+
+
+Figure 17: Sign-up Page
+
+      The sign-up allows new users to create an account by entering essential details such as username, full name, email, and password. It includes a confirmation field to ensure password accuracy and a sign-up button to complete the registration process. A login option is provided for users who already have an account, making the process convenient and user-friendly.
+
+
+
+Figure 18: Discovery Feed
+
+      The discovery feed shows the list of available cars that users can browse in the system. Each vehicle is displayed with its image price per day, and basic details, making it easier for users to compare options. This page allows users to quickly choose a car based on their preferences.
+
+
+
+Figure 19: Booking Form
+
+      Allows users to enter important details for renting a car, such as pick-up and return date, time, and location. It also includes fields for personal information like full name, email, and phone number. This enables users to complete and submit their reservation easily in one place.
+
+
+
+Figure 20: Inbox
+
+      Allows users to communicate with other users within the system. It shows chat conversations, booking details, and messages in one place. Users can send messages, view requests, and manage booking interactions easily.
+
+Figure 21: Renter's Inbox
+
+      Shows conversations between the renter and car owner. It displays booking details, status updates, and messages in one screen. Users can check requests, view booking information, and continue communication easily.
+
+
+Figure 22: Account Upgrade
+
+      Shows the two main options for users depending on their account upgrade: the Unlimited Lister, which is the pro account, and the Listing Disabled which is the free account. It also shows the benefits they can have depending on their chosen account . The Unlimited Lister, with a fee of 1,999 pesos, highlights the premium update, which unlocks unlimited listings, priority placement, a detailed analytics dashboard, and an ad-free experience, while the Listing Disabled highlights the standard renter access.
+
+
+
+
+Figure 23: Account Upgrade Confirmation
+
+      Shows a confirmation message indicating that the user has successfully upgraded their account. It highlights the transitions to a Pro account, allowing users to access premium features such as unlimited listing and additional benefits.
+
+
+Figure 17: Listing Form
+
+         Allows users to add a car by entering important details such as price, type, brand, and specifications. It also includes an option to upload photos and provide a description. This page helps users create and submit their car listings easily.
+
+
+
+Figure 24: Photo Upload
+
+        Allows users to select and add images of their car listing. It provides a simple browse option to upload photos, helping users include visual details of the vehicle.
+
+
+Figure 25: Car Type Selection
+
+        Allows users to choose the category of their vehicle, such as sedan, coupe, hatchback, pickup, or sports. This helps organize listings and makes it easier for renters to find cars based on their preferences.
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 26: Transmission Type Selection
+
+          Allows users to choose between manual and automatic options for the vehicle. This helps provide accurate details and allows renters to select cars based on their driving preference.
+
+Figure 27: Fuel Type Selection
+
+        Allows users to choose the type of fuel used by the vehicle, such as gasoline, diesel, electric, or hybrid. This helps provide clear information and allows renters to select cars based on their preference.
+Figure 28: Seater Selection
+
+        Allows users to choose the number of seats available in the vehicle. This helps provide accurate information and allows renters to select cars based on the number of passengers.
+
+Figure 29: Vehicle Condition Selection
+
+        The vehicle condition selection allows users to choose the condition of the car, such as new, good, or fair. This helps provide clear information and allows renters to understand the current state of the vehicle.
+
+
+
+
+
+
+
+
+
+
+
+Figure 30: Listing Created
+
+Shows a message confirming that the car listing has been successfully created.
+
+It includes a "See List" button that allows users to view their posted listing.
+
+
+Figure 31: Settings Manage Listing
+
+        Shows all the cars posted by the user. It displays basic details such as the car name, price, and availability, allowing users to edit or delete their listings easily.
+
+Figure 32: Settings Activity Log
+
+        Shows the user's recent actions within the system, such as browsing and rentals. It displays car details along with their status and activity history. This helps users track and monitor their interactions easily.
+
+
+Figure 33: Filter by Activity
+
+        Shows a filtered view of user activities, focusing on rentals. It displays car listings with details such as price, date rented, and availability status. This allows users to easily review their past rental transactions.
+
+
+Figure 34: Account Settings Interface
+
+      It is a dashboard for user profile management. It clearly displays essential fields of a user, such as the name, email, and password. The delete button emphasizes account control, giving users the option to remove their profile or account entirely.
+Figure 35: Edit Profile
+
+      The edit profile allows users to update their personal information such as name, email, and password. It also includes options to save changes or delete. This helps users manage and control their profile easily.
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 36: Update Profile
+
+      It shows that a notification box or a confirmation appears to confirm the user's successful updates.
+Figure 37: Delete Confirmation
+
+Shows confirmation message asking the user if they want to delete their account.
+
+It includes a delete button to proceed with the action.
+
+
+Figure 38: Delete Confirmation for Car Listing Management
+
+      Shows a confirmation message asking the user if they want to delete the vehicle entries in the car listing. It includes a delete button to proceed with the action.
+
+ADMIN
+
+
+
+Figure 39: Overview
+
+      Shows the admin dashboard of the rental car system. It displays key information such as total users, active listings, bookings, and pending approvals. It also includes navigation options and recent activity to help the admin manage the system efficiently.
+
+Figure 40: Listing Approvals
+
+      Shows the admin panel for managing car listing approvals. It displays submitted listings with details such as car name, owner, rate, and status. Admins can review each entry and take actions like approve, reject, or re-review listings.
+
+
+
+
+Figure 41: User Management
+
+      It shows the lists of registered users along with their email, subscription plan (Free or Pro), and the number of active listings they have. Each row also includes an action button (View), allowing the admin to check more details or manage a specific user.
+
+
+
+Figure 42: Bookings Management
+
+      Shows the All Bookings section in the admin dashboard. It displays a list of bookings with details such as renter, owner, car, dates, and current status. Admins can monitor booking activities and track statuses like active, pending, completed, or awaiting owner action.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 43: Supports Tickets Management
+
+It lists user-reported issues along with details such as the user, issue description, priority level, and submission time. Admins can view and respond to each ticket, helping manage and resolve user concerns efficiently
+
+REFERENCES
+
+Ahmed, F. Y., al Thiruchelvam, M., & Fong, S. L. (2019, June). Improvement of Vehicle Management System (IVMS). In 2019 IEEE International Conference on Automatic Control and Intelligent Systems (I2CACIS) (pp. 44-49). IEEE. https://ieeexplore.ieee.org/abstract/document/8825030
+Aldinovandi, R. R. (2025). SCREMS - Smart car rental management system (Doctoral dissertation,	President	University). http://repository.president.ac.id/bitstream/handle/123456789/13221/cover_0012 02100010.pdf
+Archana, M. (2019). Online car rental system (Doctoral dissertation, Kannur University). https://www.academia.edu/download/61858047/ARCHANA_FINAL20200122-942 24-glmvs4.pdf
+Archive, I. J. O. S. a. R. (2020). International Journal of Science and Research Archive. International Journal of Science and Research Archive. https://doi.org/10.30574/ijsra
+Book a Car - Hertz Philippines. (n.d.). https://hertzphilippines.com/
+Cunha, G. A., & de Souza, A. A. (2015, February). A DECISION SUPPORT SYSTEM FOR PRICING:	A	CASE	STUDY	OF	A	CAR	RENTAL	COMPANY.	In	10th
+CONTECSI-International Conference on Information Systems and Technology Management. https://web.archive.org/web/20160617031309id_/http://www.infoteca.inf.br/cont
+
+ecsi/smarty/templates/arquivos_template/upload_arquivos/acervo/docs/PDFs/01 3.pdf
+Facebook. (2026). Rent a car search results. Facebook Marketplace. Retrieved April 22, 2026,	from
+https://www.facebook.com/marketplace/107649579257859/search/?query=rent
+
+%20a%20car
+
+Keerthi, M. N., & Kumar, D. B. A. (2024). Rental car management system. International Journal of Emerging Technologies and Innovative Research, 11(7), 317-329. http://www.jetir.org/papers/JETIR2407743.pdf
+Mohite, V., Murkute, P., & Kakade, S. (2022). Online car rental system using web technology. International Journal for Research in Applied Science and Engineering	Technology,	10(5),	2215-2218. https://d1wqtxts1xzle7.cloudfront.net/87067340/Online_Car_Rental_system_usin g_Web_Technology-libre.pdf
+Nobel, P (2023). Online Car Rental System. Vellore Institute of Technology University. https://www.researchgate.net/publication/370691304_ONLINE_CAR_RENTAL_SY STEM
+Ogbiti, J. T., & Aaron, W. (2024). Development of a web-based car rental management system.	Science	World	Journal, 19(3), 797-807. https://scienceworldjournal.org/article/view/24033
+
+Rahman, W. F. W. A., & Rusli, N. I. N. B. M. (2023). The development of a web-based car rental business management system. Journal of Mathematics and Computing Science,	9(2),	101-108.
+https://journal.uitm.edu.my/ojs/index.php/JMCS/article/view/513
+
+Rent a car Philippines: Cheap car rental in Manila | van lease rates. (n.d.). https://www.anistransport.com/
+Singh, N., Pandey, V., & Nadesan, T. (2020). Web based online car rental system.
+
+ResearchGate. https://www.researchgate.net/publication/342708221_Web_Based_Online_Car_R ental_System
+Yadav, S., Pawar, S., Raut, D., & Rahi, R. (2021). Car rental system. International Research Journal of Engineering and Technology (IRJET). https://www.irjet.net/archives/V8/i5/IRJET-V8I5779.pdf
+
+APPENDICES SOURCE CODE
+INTERFACE
+
+IAuthService.java
+
+IMessageService.java
+
+
+ISystemManagementService.java
+
+
+
+IBookingService.java
+
+ICarService.java
+
+
+
+INotificationService.java
+
+
+
+IUserService.java
+
+CORE IMPLEMENTATION
+
+DBConnection.java
+
+
+SessionManager.java
+
+
+
+
+Authorization
+
+LoginFrame.java
+
+
+
+
+
+
+
+ADMIN UI
+
+MainDashboard.java
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ADMIN DASHBOARD
+
+AdminDashboard.java
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+89
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

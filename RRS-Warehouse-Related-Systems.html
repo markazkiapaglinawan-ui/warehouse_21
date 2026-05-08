@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review of Related Systems</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1in;
+        }
+
+        body {
+            color: #111;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 14pt;
+            margin: 0 0 16px;
+            text-align: left;
+        }
+
+        h2 {
+            font-size: 12pt;
+            margin: 22px 0 10px;
+        }
+
+        p {
+            margin: 0 0 12px;
+            text-align: justify;
+            text-indent: 0.5in;
+        }
+
+        figure {
+            margin: 12px 0 16px;
+            page-break-inside: avoid;
+            text-align: center;
+        }
+
+        img {
+            border: 1px solid #d0d0d0;
+            display: block;
+            margin: 0 auto;
+            max-height: 3.6in;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        figcaption {
+            color: #444;
+            font-style: italic;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        .sources p {
+            font-size: 10.5pt;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            text-indent: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Review of Related Systems</h1>
+
+    <p>
+        This section presents existing systems that are related to the Warehouse Ordering and Inventory System. These systems were reviewed to understand common features such as inventory tracking, order management, warehouse monitoring, item records, payment handling, and reporting. The following systems provide useful references for improving the design and functionality of the proposed system.
+    </p>
+
+    <h2>Zoho Inventory</h2>
+    <figure>
+        <img src="assets/rrs-zoho-inventory.png" alt="Zoho Inventory dashboard">
+        <figcaption>Figure 1: Zoho Inventory Dashboard</figcaption>
+    </figure>
+
+    <p>
+        Zoho Inventory is an online inventory management system designed to help businesses manage orders, track inventory, and monitor warehouse operations. It provides features such as sales and purchase order management, multi-warehouse tracking, barcode scanning, item monitoring, reports, and online payment integrations. This system is useful for businesses that need to manage stock movement and customer orders in one platform.
+    </p>
+
+    <p>
+        Compared to Zoho Inventory, the proposed Warehouse Ordering and Inventory System focuses on a simpler desktop-based setup using Java and MySQL. Both systems include inventory tracking, order management, customer records, and payment-related functions. However, the proposed system is designed for a smaller warehouse environment where admins, staff, receivers, and customers have specific roles inside the system.
+    </p>
+
+    <h2>Odoo Inventory</h2>
+    <figure>
+        <img src="assets/rrs-odoo-inventory.jpg" alt="Odoo inventory warehouse management">
+        <figcaption>Figure 2: Odoo Inventory Warehouse Management</figcaption>
+    </figure>
+
+    <p>
+        Odoo Inventory is a warehouse management system that provides real-time inventory visibility, product location tracking, replenishment, barcode scanning, delivery orders, receipts, and internal transfers. It is commonly used by businesses that need to manage different warehouses and monitor product movement from receiving to delivery.
+    </p>
+
+    <p>
+        The proposed Warehouse Ordering and Inventory System is similar to Odoo Inventory because it also manages stock records, item quantities, orders, and warehouse-related processes. However, Odoo is more advanced and cloud-based, while the proposed system is a more focused academic system that handles basic inventory, customer orders, stock requests, receiver approval, reports, and payment confirmation.
+    </p>
+
+    <h2>Sortly</h2>
+    <figure>
+        <img src="assets/rrs-sortly-items.webp" alt="Sortly inventory items table">
+        <figcaption>Figure 3: Sortly Inventory Items Table</figcaption>
+    </figure>
+
+    <p>
+        Sortly is an inventory management application that allows users to organize items, add product details, upload item photos, scan barcodes or QR codes, receive low-stock alerts, and generate inventory reports. It is useful for businesses that need a visual and easy-to-use system for tracking supplies, tools, materials, and equipment.
+    </p>
+
+    <p>
+        The proposed Warehouse Ordering and Inventory System shares similarities with Sortly because it also stores item details, categories, quantities, prices, and item pictures. Both systems help users monitor available stock and organize warehouse items. However, the proposed system also includes customer ordering, payment confirmation, customer service messages, role-based access, and receiver workflows, making it more focused on warehouse ordering operations.
+    </p>
+
+    <h2>Sources</h2>
+    <div class="sources">
+        <p>Zoho Inventory. https://www.zoho.com/in/inventory/</p>
+        <p>Odoo Inventory. https://www.odoo.com/app/inventory</p>
+        <p>Sortly. https://www.sortly.com/</p>
+    </div>
+</body>
+</html>

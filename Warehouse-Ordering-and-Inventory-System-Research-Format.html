@@ -1,0 +1,332 @@
+﻿<!DOCTYPE html><html><head><meta charset="utf-8"><title>Warehouse Ordering and Inventory System</title>
+<style>@page { size: Letter; margin: 1in; } body { font-family: "Times New Roman", Times, serif; font-size: 12pt; color: #000; line-height: 1.85; } .cover { text-align: center; line-height: 1.8; page-break-after: always; padding-top: 0.25in; } .cover .title { font-size: 18pt; font-weight: bold; margin: 0 0 0.5in; } .cover p { margin: 0.18in 0; text-indent: 0; text-align: center; } .chapter { text-align: center; font-weight: bold; margin: 0 0 0.18in; line-height: 1.5; page-break-before: always; } .chapter .number { display: block; } .chapter .title { display: block; margin-top: 0.08in; } h2 { text-align: center; font-size: 12pt; font-weight: bold; margin: 0.15in 0 0.2in; text-transform: uppercase; } h3 { font-size: 12pt; font-weight: bold; margin: 0.28in 0 0.05in; } p { text-indent: 0.5in; text-align: justify; margin: 0.04in 0 0.08in; } .front h2 { page-break-before: always; } .numbered { text-indent: 0.35in; } table { width: 100%; border-collapse: collapse; margin: 0.12in 0 0.08in; font-size: 10.5pt; line-height: 1.35; } th, td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; text-align: left; } th { font-weight: bold; text-align: center; } .caption { text-align: center; font-style: italic; text-indent: 0; margin: 0.08in 0 0.18in; } .figure { text-align: center; margin: 0.18in 0; page-break-inside: avoid; } .figure img { max-width: 82%; max-height: 5.9in; object-fit: contain; } .ui-shot { width: 82%; margin: 0 auto; border: 2px solid #111; background: #f2f4f8; font-family: Arial, sans-serif; line-height: 1.25; font-size: 9pt; } .ui-bar { background: #2b2b2b; color: #fff; padding: 8px 10px; text-align: left; font-weight: bold; } .ui-body { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ui-card { background: white; border: 1px solid #bbb; padding: 8px; min-height: 34px; }</style></head><body>
+<div class="cover"><div class="title">Warehouse Ordering and Inventory System</div>
+<p class="numbered">A Project Present to the Faculty Of</p>
+<p class="numbered">College of Computer Information and Communications Technology</p>
+<p class="numbered">Cebu Technical University</p>
+<p class="numbered">In Partial Fulfillment</p>
+<p class="numbered">Of the Requirement for the Subject in</p>
+<p class="numbered">PROGRAMMING 2</p>
+<p class="numbered">By</p>
+<p class="numbered">Ocariza, Amir Nathaniel</p>
+<p class="numbered">Paglinawan, Mark Azkia</p>
+<p class="numbered">Olarte, Jayden John C.</p>
+<p class="numbered">Fuentes, James Menard</p>
+<p class="numbered">Llagas, Rayver John</p>
+<p class="numbered">May 2026</p>
+</div><div class="front"><h2>DEDICATION</h2>
+<p class="numbered">This Warehouse Ordering and Inventory System is dedicated to our families, friends, classmates, and instructors who supported us during the completion of this project. Their encouragement, patience, and guidance helped us continue working through the challenges of designing, coding, testing, and improving the system.</p>
+<p class="numbered">We also dedicate this project to warehouse personnel, staff members, receivers, administrators, and customers who may benefit from a more organized way of handling inventory, stock requests, orders, customer transactions, and pre-order management. This project represents our effort to create a practical system that can reduce manual work, improve record accuracy, and support better warehouse operations.</p>
+<p class="numbered">Above all, we dedicate this work to Almighty God for giving us the knowledge, strength, and determination needed to complete this project.</p>
+<h2>ACKNOWLEDGEMENT</h2>
+<p class="numbered">The researchers would like to express sincere gratitude to everyone who contributed to the completion of the Warehouse Ordering and Inventory System.</p>
+<p class="numbered">First, we thank our families for their support, understanding, and encouragement throughout the development of this project. Their constant motivation helped us stay focused and committed.</p>
+<p class="numbered">We also thank our instructor and adviser for providing guidance, feedback, and knowledge in programming and system development. Their instruction helped us understand how to apply programming concepts, database management, graphical user interface design, and object-oriented programming principles in a real project.</p>
+<p class="numbered">We extend our appreciation to our classmates and friends who shared suggestions and assisted us during planning, testing, and debugging. Their comments helped us improve the usability and functionality of the system.</p>
+<p class="numbered">Finally, we thank God for giving us wisdom, patience, and perseverance from the beginning of the project until its completion.</p>
+<h2>TABLE OF CONTENTS</h2>
+<p class="numbered">DEDICATION</p>
+<p class="numbered">ACKNOWLEDGEMENT</p>
+<p class="numbered">TABLE OF CONTENTS</p>
+<p class="numbered">LIST OF TABLES</p>
+<p class="numbered">LIST OF FIGURES</p>
+<p class="numbered">CHAPTER 1: INTRODUCTION</p>
+<p class="numbered">Introduction</p>
+<p class="numbered">Objectives of the Project</p>
+<p class="numbered">Specific Objectives</p>
+<p class="numbered">Scope and Limitations of the Project</p>
+<p class="numbered">Significance of the Project</p>
+<p class="numbered">CHAPTER 2: REVIEW OF RELATED LITERATURE</p>
+<p class="numbered">Review of Literature</p>
+<p class="numbered">Review of Studies</p>
+<p class="numbered">Comparative Matrix</p>
+<p class="numbered">CHAPTER 3: METHODOLOGY</p>
+<p class="numbered">Environment</p>
+<p class="numbered">Technical Feasibility</p>
+<p class="numbered">Hardware and Software Specification</p>
+<p class="numbered">Design</p>
+<p class="numbered">Output and User-Interface Design</p>
+<p class="numbered">Development</p>
+<p class="numbered">Program Workflow</p>
+<p class="numbered">CHAPTER 4: CONCLUSION AND RECOMMENDATION</p>
+<p class="numbered">Conclusion</p>
+<p class="numbered">Recommendations</p>
+<p class="numbered">REFERENCES</p>
+<p class="numbered">APPENDICES</p>
+<h2>LIST OF TABLES</h2>
+<p class="numbered">Table 1: Hardware and Software Specification</p>
+<p class="numbered">Table 2: Comparative Matrix of Related Systems</p>
+<p class="numbered">Table 3: User Roles and System Access</p>
+<h2>LIST OF FIGURES</h2>
+<p class="numbered">Figure 1: Login Form</p>
+<p class="numbered">Figure 2: Admin/Staff Dashboard</p>
+<p class="numbered">Figure 3: Inventory Management Form</p>
+<p class="numbered">Figure 4: Order Management Form</p>
+<p class="numbered">Figure 5: Customer Shop Page</p>
+<p class="numbered">Figure 6: Customer Cart and Checkout Page</p>
+<p class="numbered">Figure 7: Receiver Stock Approval Page</p>
+<p class="numbered">Figure 8: Reports Page</p>
+<p class="numbered">Figure 9: Customer Service Page</p>
+<p class="numbered">Figure 10: Program Workflow</p>
+<div class="chapter"><span class="number">CHAPTER 1</span><span class="title">INTRODUCTION</span></div>
+<h3>Rationale of the Study</h3>
+<p>Warehouse operations play an important role in businesses that handle products, supplies, equipment, and customer orders. A warehouse must maintain accurate records of available stock, incoming stock, outgoing orders, customer transactions, and restocking needs. When these processes are handled manually, errors may occur in counting, recording, updating, and monitoring inventory. These errors can lead to delayed transactions, inaccurate stock levels, unorganized records, and poor customer service.</p>
+<p>Traditional inventory management often depends on handwritten records, spreadsheets, or verbal updates between staff members. Although these methods may work for small operations, they become difficult to maintain when the number of products, users, and transactions increases. Staff may accidentally enter duplicate records, overlook low-stock items, or approve orders without checking the actual available quantity. Customers may also request more items than the warehouse can immediately provide, which creates confusion if there is no clear process for separating available stock from future stock.</p>
+<p>The proposed Warehouse Ordering and Inventory System is designed to help address these problems by providing a computerized desktop-based system developed using Java Swing and MySQL. The system allows authorized users to manage inventory records, create and monitor orders, submit stock requests, approve incoming stock, view reports, and handle customer service messages. It also includes a customer shopping module where customers can browse products, add items to a cart, and proceed to checkout.</p>
+<p>One important feature of the system is the checkout and pre-order process. Customers should only be able to check out the available stock quantity of an item. If the customer requests a quantity higher than the available stock, the system automatically separates the transaction. The available quantity is processed as a normal checkout, while the excess quantity is recorded as a pre-order request for the next stock. This feature helps prevent negative inventory, improves customer communication, and gives warehouse staff a clear basis for restocking.</p>
+<p>The system also supports role-based access. Administrators can manage users and view reports, staff members can manage inventory and orders, receivers can approve stock requests and dispatch orders, and customers can shop, view purchase history, cancel orders, and send concerns to customer service. Through these features, the Warehouse Ordering and Inventory System aims to improve accuracy, efficiency, and organization in warehouse transactions.</p>
+<h3>OBJECTIVES OF THE PROJECT</h3>
+<h3>General Objective</h3>
+<p>The main objective of this project is to design and develop a Warehouse Ordering and Inventory System using Java programming language and MySQL database. The system aims to provide an organized platform for inventory management, ordering, customer checkout, pre-order handling, stock requests, receiver approval, reporting, and customer service.</p>
+<h3>Specific Objectives</h3>
+<p class="numbered">1. To develop a secure login and role-based access system.</p>
+<p class="numbered">1.1. To allow users to log in using valid credentials.</p>
+<p class="numbered">1.2. To provide different access levels for admin, staff, receiver, and customer users.</p>
+<p class="numbered">1.3. To protect system functions from unauthorized users.</p>
+<p class="numbered">2. To develop an inventory management module.</p>
+<p class="numbered">2.1. To allow staff or admin users to add, edit, search, and delete item records.</p>
+<p class="numbered">2.2. To store item information such as item code, name, category, quantity, price, location, and image path.</p>
+<p class="numbered">2.3. To help users monitor available stock and low-stock items.</p>
+<p class="numbered">3. To develop an order management module.</p>
+<p class="numbered">3.1. To allow authorized users to create, search, update, and cancel orders.</p>
+<p class="numbered">3.2. To record order details such as customer name, item, quantity, status, date, payment method, and courier information.</p>
+<p class="numbered">3.3. To support order tracking and delivery status updates.</p>
+<p class="numbered">4. To develop a customer shopping and checkout module.</p>
+<p class="numbered">4.1. To allow customers to browse products by category and search keyword.</p>
+<p class="numbered">4.2. To allow customers to add items to a cart and proceed to payment.</p>
+<p class="numbered">4.3. To compute the amount due based only on available stock.</p>
+<p class="numbered">4.4. To automatically request a pre-order when the customer quantity exceeds available stock.</p>
+<p class="numbered">5. To develop a stock request and approval module.</p>
+<p class="numbered">5.1. To allow stock requests to be submitted when inventory needs to be replenished.</p>
+<p class="numbered">5.2. To allow receivers to approve pending stock requests.</p>
+<p class="numbered">5.3. To allow staff to post approved stock into inventory.</p>
+<p class="numbered">6. To develop a customer service module.</p>
+<p class="numbered">6.1. To allow customers to submit order concerns, payment concerns, product availability questions, and account help requests.</p>
+<p class="numbered">6.2. To allow staff or admin users to read and reply to customer messages.</p>
+<p class="numbered">6.3. To allow customers to view replies from their profile or customer service page.</p>
+<p class="numbered">7. To generate useful reports.</p>
+<p class="numbered">7.1. To display daily inventory records.</p>
+<p class="numbered">7.2. To show low-stock alerts.</p>
+<p class="numbered">7.3. To provide inventory, order, and sales reports.</p>
+<p class="numbered">8. To apply object-oriented programming principles.</p>
+<p class="numbered">8.1. To organize the system into separate Java classes and modules.</p>
+<p class="numbered">8.2. To use reusable methods for data access, interface design, and system operations.</p>
+<p class="numbered">8.3. To maintain clear separation between user interface logic and database operations.</p>
+<h3>SCOPE AND LIMITATIONS OF THE PROJECT</h3>
+<h3>Scope</h3>
+<p>The study focuses on the development of a desktop-based Warehouse Ordering and Inventory System using Java Swing and MySQL. The system includes user login, role-based access, inventory management, order management, stock requests, receiver approval, customer shopping, checkout, pre-order handling, reports, and customer service.</p>
+<p>The system allows admin users to manage users, view reports, manage inventory, manage orders, and answer customer concerns. Staff users can manage inventory, handle orders, submit stock requests, post approved stock, and assist customers. Receiver users can approve stock requests, assign courier details, and monitor dispatch history. Customer users can browse products, add products to cart, check out available stock, request pre-orders for excess quantities, view purchase history, cancel orders, and send customer service messages.</p>
+<p>The system stores data in a MySQL database. Records include users, items, stock requests, orders, and customer service messages. The system also supports product images stored through file paths.</p>
+<h3>Limitations</h3>
+<p>The system is designed for desktop use only and does not include a mobile application version.</p>
+<p>The system uses simulated payment features such as QR code display and walk-in payment entry. It is not connected to real payment gateways.</p>
+<p>The system does not include barcode scanners, RFID scanners, or automated warehouse hardware.</p>
+<p>The system does not include real-time delivery tracking or GPS courier tracking.</p>
+<p>The pre-order feature records excess quantity and creates stock requests, but fulfillment still depends on receiver approval and staff posting of new stock.</p>
+<p>The system requires a running MySQL database connection and does not support offline operation.</p>
+<p>The system is intended for academic project use and may require further testing, security improvements, and deployment preparation before use in an actual business environment.</p>
+<h3>SIGNIFICANCE OF THE PROJECT</h3>
+<p>For Warehouse Staff</p>
+<p>The system helps warehouse staff organize item records, monitor stock levels, submit stock requests, manage orders, and reduce manual recording errors.</p>
+<p>For Administrators</p>
+<p>The system assists administrators in managing user accounts, reviewing reports, monitoring inventory, and overseeing warehouse operations.</p>
+<p>For Receivers</p>
+<p>The receiver module provides a structured way to approve stock requests and manage order dispatch processes.</p>
+<p>For Customers</p>
+<p>The customer module provides a convenient way to browse products, place orders, check out available stock, request pre-orders, view order history, cancel orders, and send concerns.</p>
+<p>For Future Researchers</p>
+<p>This project may serve as a reference for students who want to develop similar inventory, ordering, stock request, or warehouse management systems using Java and MySQL.</p>
+<div class="chapter"><span class="number">CHAPTER 2</span><span class="title">REVIEW OF RELATED LITERATURE</span></div>
+<h3>Review of Literature</h3>
+<p>Inventory management is a major part of warehouse operations because it directly affects product availability, customer satisfaction, and business continuity. Baraka and Yadavalli (2022) explained that inventory is a central function in supply chain and logistics management. Their systematic review emphasized that inventory control is important because demand, supply, and stock availability affect how organizations meet customer needs.</p>
+<p>Warehouse management systems are designed to provide accurate records and improve the movement of goods inside an organization. Zhang and Pan (2022) designed and implemented an intelligent warehouse management system based on MySQL database technology. Their study emphasized that a warehouse system can support basic information management, system management, procurement, warehousing, and inventory management. This supports the design of the proposed system because the Warehouse Ordering and Inventory System also uses MySQL to store and manage warehouse records.</p>
+<p>Manual inventory processes are often associated with inaccurate records, slow searching, and inefficient reporting. Janah, Atina, and Permatasari (2024) discussed the digital transformation of warehouse management through a web-based information system. Their study identified manual stock recording as a source of errors and document accumulation. The proposed Warehouse Ordering and Inventory System addresses similar issues by replacing manual recording with a computerized inventory and order database.</p>
+<p>Mukti (2021) developed an inventory information system using Java, NetBeans, and MySQL. The study showed that Java-based inventory systems can help administrators manage item data and reports more efficiently. This is related to the present project because the proposed system is also developed using Java and MySQL, and it includes inventory, order, and reporting modules.</p>
+<p>Kumaladewi and Firdaus (2025) analyzed and designed an inventory management information system for a company that relied on manual inventory processes. Their study highlighted features such as real-time inventory tracking, restocking alerts, and transaction histories. These ideas are related to the proposed system because it includes stock monitoring, low-stock reports, stock requests, and transaction records.</p>
+<h3>Review of Studies</h3>
+<p>Several studies show that computerized inventory and warehouse systems improve operational efficiency. Zhang and Pan (2022) reported that a MySQL-based warehouse management system can provide automatic and comprehensive records for warehouse activities. This supports the need for a database-backed system that can store item records, order details, stock requests, and customer transactions.</p>
+<p>Mukti (2021) showed that Java and MySQL can be used to create an inventory system that helps administrators manage inventory records and generate reports. This study is important to the proposed project because both systems use Java as the main programming language and MySQL as the database.</p>
+<p>Janah et al. (2024) found that digital warehouse systems can reduce recording errors and improve reporting and distribution processes. This relates to the proposed project because the system aims to reduce manual work and provide more organized warehouse records.</p>
+<p>Kumaladewi and Firdaus (2025) emphasized that inventory systems can support faster item retrieval, transaction history, and restocking decisions. The proposed system applies similar concepts by allowing users to search items, monitor stock, and generate stock requests when inventory is insufficient.</p>
+<h3>Comparative Matrix</h3>
+<p class="caption">Table 2: Comparative Matrix of Related Systems</p>
+<table>
+<tr><th>System or Study</th><th>Main Features</th><th>Similarity to Proposed System</th><th>Difference from Proposed System</th></tr>
+<tr><td>Zhang and Pan (2022) MySQL Warehouse Management System</td><td>MySQL database, warehouse modules, inventory records</td><td>Uses database-backed warehouse records</td><td>Focuses on intelligent warehouse design, while this project includes customer checkout and pre-order requests</td></tr>
+<tr><td>Mukti (2021) Java Inventory System</td><td>Java-based inventory, MySQL database, reports</td><td>Uses Java and MySQL for inventory management</td><td>Does not focus on customer shop, checkout, and automatic pre-order</td></tr>
+<tr><td>Janah et al. (2024) Web Warehouse Information System</td><td>Stock monitoring, restock notifications, reporting</td><td>Supports digital warehouse management</td><td>Web-based, while this project is desktop-based Java Swing</td></tr>
+<tr><td>Kumaladewi and Firdaus (2025) Inventory Management Information System</td><td>Inventory tracking, restocking, transaction history</td><td>Similar focus on inventory accuracy and restocking</td><td>Uses a different development environment and does not include the same customer ordering flow</td></tr>
+<tr><td>Proposed Warehouse Ordering and Inventory System</td><td>Role-based login, inventory, orders, customer shop, checkout, pre-order, stock request approval, reports, customer service</td><td>Combines inventory, ordering, customer, receiver, and reporting features</td><td>Academic desktop application using Java Swing and MySQL</td></tr>
+</table>
+<div class="chapter"><span class="number">CHAPTER 3</span><span class="title">METHODOLOGY</span></div>
+<p>This chapter outlines the systematic processes and technical frameworks utilized to build the Warehouse Ordering and Inventory System. It covers the development environment, the feasibility of the architecture, and the specific design to development pipeline used to transition the planned warehouse workflows into a functional Java Swing and MySQL desktop application.</p>
+<h3>Environment</h3>
+<p>The Warehouse Ordering and Inventory System was developed in an academic environment as a requirement for the subject Programming 2. The system was created as a desktop-based Java application with a graphical user interface. Development was conducted using Java programming tools and a MySQL database server.</p>
+<p>The system is intended for a warehouse setting where products are managed, stock levels are monitored, and customers can place orders. The system supports different users involved in the warehouse process, including administrators, staff, receivers, and customers.</p>
+<h3>Technical Feasibility</h3>
+<p>The project is technically feasible because the required tools are available and suitable for the system. Java provides the programming language and Swing library for building the graphical user interface. MySQL provides the database for storing user accounts, item records, orders, stock requests, and customer service messages. The MySQL Connector/J library allows the Java program to communicate with the database.</p>
+<p>The system is modular and divided into different forms and classes such as LoginForm, MainMenu, InventoryForm, OrderForm, ReceiverForm, CustomerMainMenu, CustomerServiceForm, ReportForm, UserForm, and DataStorage. This structure makes the project easier to maintain, test, and improve.</p>
+<h3>Hardware and Software Specification</h3>
+<p class="caption">Table 1: Hardware and Software Specification</p>
+<table>
+<tr><th>Category</th><th>Specification</th></tr>
+<tr><td>Processor</td><td>Intel Core i3 or higher</td></tr>
+<tr><td>Memory</td><td>At least 4GB RAM, 8GB recommended</td></tr>
+<tr><td>Storage</td><td>At least 500MB free storage for application files and database</td></tr>
+<tr><td>Operating System</td><td>Windows 10 or later</td></tr>
+<tr><td>Programming Language</td><td>Java</td></tr>
+<tr><td>GUI Library</td><td>Java Swing</td></tr>
+<tr><td>Database</td><td>MySQL</td></tr>
+<tr><td>Database Driver</td><td>MySQL Connector/J</td></tr>
+<tr><td>IDE</td><td>IntelliJ IDEA, NetBeans, Eclipse, or any Java IDE</td></tr>
+</table>
+<h3>Design</h3>
+<p>The system design follows a modular desktop application structure. Each major function is placed in a separate form or class. The DataStorage class handles database operations such as adding items, loading items, creating orders, adding stock requests, approving stock requests, updating users, and retrieving reports.</p>
+<p>The LoginForm serves as the entry point of the system. After successful login, the system checks the user&#39;s role. Admin, staff, and receiver users are routed to the main dashboard, while customers are routed to the customer shopping interface.</p>
+<p>The MainMenu class controls navigation for admin, staff, and receiver users. It displays modules based on the user&#39;s role. Admin users have access to user management, inventory, orders, reports, and customer service. Staff users have access to operational modules but not user management. Receiver users focus on dispatch and stock approval.</p>
+<p>The CustomerMainMenu class provides the customer-side workflow. Customers can browse products, add items to cart, proceed to payment, view purchase history, cancel orders, and contact customer service.</p>
+<h3>Output and User-Interface Design</h3>
+<h3>Login Form</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Login Form</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 1: Authentication Form. Login Form</p></div>
+<p>The login form allows users to enter their username and password. If the credentials are valid, the system opens the appropriate interface based on the user&#39;s role.</p>
+<h3>Inventory Form</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Inventory Management Form</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 2: Admin/Staff Forms. Inventory Management Form</p></div>
+<p>The inventory form allows authorized users to add, edit, search, and delete warehouse items. Item records include item code, item name, category, quantity, price, location details, and image path.</p>
+<h3>Order Form</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Order Management Form</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 3: Admin/Staff Forms. Order Management Form</p></div>
+<p>The order form allows staff or admin users to create orders, search records, update order status, cancel orders, and submit stock requests.</p>
+<h3>Receiver Form</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Receiver Stock Approval Form</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 4: Receiver Forms. Stock Approval Form</p></div>
+<p>The receiver form allows receiver users to view pending orders, assign courier information, view dispatch history, and approve pending stock requests.</p>
+<h3>Customer Shop</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Customer Shop Page</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 5: Customer Forms. Product Browsing Form</p></div>
+<p>The customer shop displays available products with product images, prices, categories, and stock information. Customers can search and filter items before adding them to the cart.</p>
+<h3>Cart and Checkout</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Cart and Checkout Page</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 6: Customer Forms. Cart and Checkout Form</p></div>
+<p>The cart shows the selected items and requested quantities. The checkout process separates available stock from excess quantity. Available stock is processed as a paid order, while excess quantity is recorded as a pre-order request.</p>
+<h3>Reports</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Reports Page</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 7: Admin/Staff Forms. Reports Form</p></div>
+<p>The reports module displays daily inventory, low-stock alerts, inventory reports, order reports, and sales reports.</p>
+<h3>Customer Service</h3>
+<div class="figure"><div class="ui-shot"><div class="ui-bar">WAREHOUSE MANAGEMENT SYSTEM</div><div class="ui-body"><div class="ui-card"><b>Customer Service Page</b><br>Role-based controls and module navigation</div><div class="ui-card">Inventory records, order status, stock alerts, and approval notices</div><div class="ui-card">Customer, admin, staff, and receiver workflows connected to MySQL</div><div class="ui-card">Low-stock notification and replenishment process</div></div></div><p class="caption">Figure 8: Customer Service Form</p></div>
+<p>The customer service module allows customers to send concerns and allows staff or admin users to reply.</p>
+<h3>Development</h3>
+<p>The system was developed using Java and MySQL. Java Swing was used to build the graphical user interface, while MySQL was used to store records. The development process included planning, interface design, coding, database integration, testing, and debugging.</p>
+<p>The database includes tables for users, items, stock requests, orders, and customer service messages. These tables allow the system to maintain organized records and support the main processes of the warehouse.</p>
+<p>The checkout and pre-order feature was developed to enforce the rule that a customer can only check out the available stock quantity. If the customer requests more than the available stock, the excess is automatically saved as a pre-order request and a stock request is created for the next inventory replenishment.</p>
+<h3>Program Workflow</h3>
+<div class="figure"><img src="assets/system-flowchart.png"><p class="caption">Figure 9: Program Workflow. Warehouse Ordering and Inventory System Flowchart</p></div>
+<h3>General System Workflow</h3>
+<p class="numbered">1. User opens the application.</p>
+<p class="numbered">2. User logs in using username and password.</p>
+<p class="numbered">3. System validates credentials from the database.</p>
+<p class="numbered">4. System identifies the user&#39;s role.</p>
+<p class="numbered">5. System opens the correct interface.</p>
+<h3>Admin and Staff Workflow</h3>
+<p class="numbered">1. Admin or staff logs in.</p>
+<p class="numbered">2. User opens the dashboard.</p>
+<p class="numbered">3. User manages inventory, orders, reports, stock requests, or customer service.</p>
+<p class="numbered">4. Changes are saved to the MySQL database.</p>
+<h3>Receiver Workflow</h3>
+<p class="numbered">1. Receiver logs in.</p>
+<p class="numbered">2. Receiver views order queue or stock approvals.</p>
+<p class="numbered">3. Receiver approves stock requests.</p>
+<p class="numbered">4. Approved stock becomes available for staff posting.</p>
+<p class="numbered">5. Staff posts approved stock to inventory.</p>
+<h3>Customer Checkout and Pre-order Workflow</h3>
+<p class="numbered">1. Customer logs in.</p>
+<p class="numbered">2. Customer browses products.</p>
+<p class="numbered">3. Customer selects an item and quantity.</p>
+<p class="numbered">4. Customer adds the item to cart or buys now.</p>
+<p class="numbered">5. System checks requested quantity against available stock.</p>
+<p class="numbered">6. If requested quantity is within stock, the system processes a normal checkout.</p>
+<p class="numbered">7. If requested quantity exceeds stock, the system separates the transaction.</p>
+<p class="numbered">8. Available stock is checked out and paid.</p>
+<p class="numbered">9. Excess quantity is recorded as a pre-order request.</p>
+<p class="numbered">10. A stock request is automatically created for the excess quantity.</p>
+<p class="numbered">11. Receiver reviews and approves the stock request.</p>
+<p class="numbered">12. Staff posts new stock once approved.</p>
+<h3>Customer Service Workflow</h3>
+<p class="numbered">1. Customer logs in to the system.</p>
+<p class="numbered">2. Customer opens the Customer Service page.</p>
+<p class="numbered">3. Customer selects the concern subject, such as order concern, payment concern, product availability, or account help.</p>
+<p class="numbered">4. Customer enters the order ID if the concern is related to an order.</p>
+<p class="numbered">5. Customer types the message or concern.</p>
+<p class="numbered">6. System validates that the message is not empty.</p>
+<p class="numbered">7. System saves the customer service message to the database.</p>
+<p class="numbered">8. Admin or staff opens the Customer Service module.</p>
+<p class="numbered">9. Admin or staff reads the customer message.</p>
+<p class="numbered">10. Admin or staff writes and submits a reply.</p>
+<p class="numbered">11. System saves the reply to the database.</p>
+<p class="numbered">12. Customer refreshes or reopens the Customer Service page to view the reply.</p>
+<h3>Cancel Order with Reason Workflow</h3>
+<p class="numbered">1. Customer logs in and opens the profile page.</p>
+<p class="numbered">2. Customer views purchase history.</p>
+<p class="numbered">3. Customer selects an order from the table.</p>
+<p class="numbered">4. System checks if the order is already cancelled or delivered.</p>
+<p class="numbered">5. If the order is delivered, the system prevents cancellation.</p>
+<p class="numbered">6. If the order is still cancellable, the customer enters the cancellation reason.</p>
+<p class="numbered">7. System validates that a cancellation reason is provided.</p>
+<p class="numbered">8. Customer confirms the cancellation.</p>
+<p class="numbered">9. System updates the order status to cancelled.</p>
+<p class="numbered">10. If the cancelled order used available stock, the system returns the quantity to inventory.</p>
+<p class="numbered">11. If the cancelled order is a pre-order, no inventory stock is returned.</p>
+<p class="numbered">12. System sends a notification record to customer service for admin or staff review.</p>
+<h3>Stock Limit and Pre-order Flowchart Details</h3>
+<p class="numbered">1. Customer selects item quantity.</p>
+<p class="numbered">2. System reads the current stock quantity.</p>
+<p class="numbered">3. System compares requested quantity with available stock.</p>
+<p class="numbered">4. If stock is enough, the full requested quantity proceeds to normal checkout.</p>
+<p class="numbered">5. If stock is not enough, the system computes available quantity and excess quantity.</p>
+<p class="numbered">6. Available quantity is processed as the current checkout quantity.</p>
+<p class="numbered">7. Customer pays only for the available quantity and delivery fee.</p>
+<p class="numbered">8. Excess quantity is marked as pre-order requested.</p>
+<p class="numbered">9. System creates a pre-order order record for the excess quantity.</p>
+<p class="numbered">10. System automatically creates a stock request for the excess quantity.</p>
+<p class="numbered">11. Receiver reviews the stock request.</p>
+<p class="numbered">12. Receiver approves the stock request.</p>
+<p class="numbered">13. Staff posts the approved stock to inventory.</p>
+<p class="numbered">14. The pre-order can be processed once the next stock is available.</p>
+<h3>Admin/Staff Inventory Image Update Workflow</h3>
+<p class="numbered">1. Admin or staff logs in to the system.</p>
+<p class="numbered">2. Admin or staff opens the Inventory module.</p>
+<p class="numbered">3. User chooses Add Item or Edit Item.</p>
+<p class="numbered">4. User enters or updates item details such as item code, item name, category, quantity, price, aisle, rack, and bin code.</p>
+<p class="numbered">5. User selects or updates the item image.</p>
+<p class="numbered">6. System saves the image path together with the item record.</p>
+<p class="numbered">7. System stores the updated item information in the database.</p>
+<p class="numbered">8. Customer shop reloads product records from inventory.</p>
+<p class="numbered">9. Updated item image appears in the customer product card.</p>
+<div class="chapter"><span class="number">CHAPTER 4</span><span class="title">CONCLUSION AND RECOMMENDATION</span></div>
+<h3>Conclusion</h3>
+<p>The development of the Warehouse Ordering and Inventory System achieved its main objective of creating a desktop-based application for managing inventory, orders, stock requests, customer transactions, reports, and customer service. By using Java Swing and MySQL, the researchers were able to create a system that organizes warehouse records and supports different user roles.</p>
+<p>The system improves the traditional warehouse process by reducing manual recording, organizing item data, supporting order management, and providing clear stock monitoring. The role-based access feature ensures that users only access the modules intended for their responsibilities.</p>
+<p>One of the important features of the system is the customer checkout and pre-order process. The system ensures that customers only check out the available stock quantity. If the requested quantity exceeds the current stock, the excess is automatically recorded as a pre-order request for the next stock. This helps prevent negative stock values, improves customer communication, and gives staff a clearer restocking requirement.</p>
+<p>Overall, the Warehouse Ordering and Inventory System provides a functional academic prototype that demonstrates the practical use of programming, database management, graphical user interface design, and object-oriented programming in solving warehouse-related problems.</p>
+<h3>Recommendations</h3>
+<p>The researchers recommend the following improvements for future development:</p>
+<p class="numbered">1. Add barcode or QR code scanning for faster item lookup and stock updates.</p>
+<p class="numbered">2. Integrate real payment gateways such as GCash, Maya, or bank payment APIs.</p>
+<p class="numbered">3. Add automatic notification features for approved stock requests, shipped orders, and customer replies.</p>
+<p class="numbered">4. Add real-time courier tracking for delivery monitoring.</p>
+<p class="numbered">5. Improve security by hashing passwords and adding stronger account validation.</p>
+<p class="numbered">6. Add backup and restore features for the database.</p>
+<p class="numbered">7. Create a mobile or web version for easier access outside the desktop environment.</p>
+<p class="numbered">8. Add automatic fulfillment of pre-orders once new stock is posted.</p>
+<p class="numbered">9. Improve report generation by adding printable PDF or Excel exports.</p>
+<p class="numbered">10. Conduct more user testing with actual warehouse staff and customers.</p>
+<h2>REFERENCES</h2>
+<p>Baraka, J. C. M., &amp; Yadavalli, S. V. (2022). Inventory management concepts and implementations: A systematic review. South African Journal of Industrial Engineering, 32(2), 15-36. https://doi.org/10.7166/33-2-2527</p>
+<p>Janah, S. M., Atina, V., &amp; Permatasari, H. (2024). Digital transformation of warehouse management through web-based information system at CV. Al Salam. Jurnal Mandiri IT, 13(1). https://doi.org/10.35335/mandiri.v13i1.330</p>
+<p>Kumaladewi, N., &amp; Firdaus, R. F. (2025). Analysis and Design of Inventory Management Information Systems at PT. XYZ. Applied Information System and Management, 8(1), 53-64. https://doi.org/10.15408/aism.v8i1.42602</p>
+<p>Mukti, H. (2021). Sistem Informasi Inventory Barang Pada PT. Assami Ananda Berbasis Java Neatbeans. PETIR, 14(2), 139-149. https://doi.org/10.33322/petir.v14i2.884</p>
+<p>Zhang, Y., &amp; Pan, F. (2022). Design and implementation of a new intelligent warehouse management system based on MySQL database technology. Informatica, 46(3). https://doi.org/10.31449/inf.v46i3.3968</p>
+<h2>APPENDICES</h2>
+<p>Appendix A: Source Code</p>
+<p>The source code includes the Java files used in the development of the Warehouse Ordering and Inventory System. Major files include LoginForm.java, MainMenu.java, InventoryForm.java, OrderForm.java, ReceiverForm.java, CustomerMainMenu.java, CustomerServiceForm.java, ReportForm.java, UserForm.java, UserRole.java, DatabaseConfig.java, and DataStorage.java.</p>
+<p>Appendix B: Database Schema</p>
+<p>The database schema includes tables for users, items, stock_requests, orders, and customer_service_messages.</p>
+<p>Appendix C: Screenshots</p>
+<p>Screenshots of the login form, main dashboard, inventory form, order form, customer shop, checkout page, receiver approval page, report page, and customer service page may be inserted in this section.</p>
+</body></html>
+
