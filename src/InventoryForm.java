@@ -25,12 +25,24 @@ public class InventoryForm {
             "Toys"
     };
 
+    public static String[] itemCategoryOptions() {
+        return ITEM_CATEGORIES.clone();
+    }
+
+    public static String[] itemCategoryFilterOptions() {
+        String[] options = new String[ITEM_CATEGORIES.length + 1];
+        options[0] = "All";
+        System.arraycopy(ITEM_CATEGORIES, 0, options, 1, ITEM_CATEGORIES.length);
+        return options;
+    }
+
     private static final String OVERVIEW_CARD = "overview";
     private static final String ADD_CARD = "add";
     private static final String EDIT_CARD = "edit";
     private static final String SEARCH_CARD = "search";
     private static final String DELETE_CARD = "delete";
 
+    private final DataStorage.User currentUser;
     private final UserRole userRole;
     private final CardLayout contentLayout = new CardLayout();
 
@@ -51,6 +63,9 @@ public class InventoryForm {
     private JLabel addImagePreviewLabel;
     private JLabel addImagePathLabel;
     private File addSelectedImageFile;
+    private JComboBox<String> staffApprovedStockBox;
+    private JTextArea staffApprovedStockDetailsArea;
+    private final List<DataStorage.StockRequest> approvedStockRequests = new ArrayList<>();
 
     private JComboBox<String> editLookupBox;
     private JTextField editNameField;
@@ -75,11 +90,16 @@ public class InventoryForm {
     private DataStorage.Item loadedEditItem;
 
     public InventoryForm() {
-        this(UserRole.ADMIN);
+        this(new DataStorage.User("admin", "", UserRole.ADMIN));
     }
 
     public InventoryForm(UserRole userRole) {
-        this.userRole = userRole;
+        this(new DataStorage.User(userRole.getDisplayName().toLowerCase(Locale.US), "", userRole));
+    }
+
+    public InventoryForm(DataStorage.User currentUser) {
+        this.currentUser = currentUser == null ? new DataStorage.User("admin", "", UserRole.ADMIN) : currentUser;
+        this.userRole = this.currentUser.role;
         if (mainPanel == null) {
             buildUi();
         } else {
@@ -242,6 +262,10 @@ public class InventoryForm {
     }
 
     private JPanel createAddPanel() {
+        if (userRole == UserRole.STAFF) {
+            return createStaffStockInPanel();
+        }
+
         JPanel panel = createSurfacePanel();
         panel.setLayout(new BorderLayout(0, 16));
 
@@ -278,6 +302,32 @@ public class InventoryForm {
                 )
         )), BorderLayout.CENTER);
         panel.add(createButtonRow(saveButton), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel createStaffStockInPanel() {
+        JPanel panel = createSurfacePanel();
+        panel.setLayout(new BorderLayout(0, 16));
+
+        staffApprovedStockBox = new JComboBox<>();
+        staffApprovedStockBox.setEditable(false);
+        staffApprovedStockBox.addActionListener(event -> updateApprovedStockDetails());
+        staffApprovedStockDetailsArea = createTextArea();
+        staffApprovedStockDetailsArea.setEditable(false);
+
+        JPanel body = new JPanel(new BorderLayout(0, 12));
+        body.setOpaque(false);
+        body.add(createFormStack(
+                "Receiver-Approved Item", staffApprovedStockBox
+        ), BorderLayout.NORTH);
+        body.add(new JScrollPane(staffApprovedStockDetailsArea), BorderLayout.CENTER);
+
+        JButton postButton = createActionButton("Post Approved Stock");
+        postButton.addActionListener(event -> handlePostApprovedStock());
+
+        panel.add(createSectionTitle("Stock-In Item"), BorderLayout.NORTH);
+        panel.add(body, BorderLayout.CENTER);
+        panel.add(createButtonRow(postButton), BorderLayout.SOUTH);
         return panel;
     }
 
@@ -535,6 +585,14 @@ public class InventoryForm {
     }
 
     private void showAddPanel() {
+        if (userRole == UserRole.STAFF) {
+            descriptionLabel.setText("Post only receiver-approved stock items to inventory.");
+            statusLabel.setText(" ");
+            reloadApprovedStockRequests();
+            contentLayout.show(contentPanel, ADD_CARD);
+            return;
+        }
+
         descriptionLabel.setText(userRole == UserRole.STAFF
                 ? "Record an incoming stock item in this panel."
                 : "Add a new inventory item in this panel.");
@@ -617,6 +675,86 @@ public class InventoryForm {
         editSelectedImageFile = null;
         editImagePath = "";
         setImagePreview(editImagePreviewLabel, editImagePathLabel, "");
+    }
+
+    private void reloadApprovedStockRequests() {
+        if (staffApprovedStockBox == null) {
+            return;
+        }
+
+        approvedStockRequests.clear();
+        approvedStockRequests.addAll(DataStorage.getInstance().getStockRequestsByStatus("APPROVED"));
+        staffApprovedStockBox.removeAllItems();
+        for (DataStorage.StockRequest request : approvedStockRequests) {
+            staffApprovedStockBox.addItem(approvedStockDisplay(request));
+        }
+        if (staffApprovedStockBox.getItemCount() > 0) {
+            staffApprovedStockBox.setSelectedIndex(0);
+        }
+        updateApprovedStockDetails();
+    }
+
+    private String approvedStockDisplay(DataStorage.StockRequest request) {
+        return request.requestCode + " | " + request.itemCode + " - " + request.itemName + " | Qty: " + request.quantity;
+    }
+
+    private DataStorage.StockRequest selectedApprovedStockRequest() {
+        if (staffApprovedStockBox == null) {
+            return null;
+        }
+        int selectedIndex = staffApprovedStockBox.getSelectedIndex();
+        if (selectedIndex < 0 || selectedIndex >= approvedStockRequests.size()) {
+            return null;
+        }
+        return approvedStockRequests.get(selectedIndex);
+    }
+
+    private void updateApprovedStockDetails() {
+        if (staffApprovedStockDetailsArea == null) {
+            return;
+        }
+        DataStorage.StockRequest request = selectedApprovedStockRequest();
+        if (request == null) {
+            staffApprovedStockDetailsArea.setText("No receiver-approved stock items are available.");
+            return;
+        }
+        staffApprovedStockDetailsArea.setText(
+                "Request ID: " + request.requestCode + "\n" +
+                "Item ID: " + request.itemCode + "\n" +
+                "Item Name: " + request.itemName + "\n" +
+                "Category: " + request.category + "\n" +
+                "Current Stock: " + request.currentQuantity + "\n" +
+                "Approved Quantity: " + request.quantity + "\n" +
+                "Stock After Posting: " + (request.currentQuantity + request.quantity) + "\n" +
+                "Requested By: " + request.requestedBy + " (" + request.requestedRole + ")\n" +
+                "Approved By: " + (request.approvedBy == null || request.approvedBy.isBlank() ? "-" : request.approvedBy) + "\n" +
+                "Approved At: " + (request.approvedAt == null || request.approvedAt.isBlank() ? "-" : request.approvedAt) + "\n\n" +
+                "This item selector is locked. Staff can only post stocks approved by the receiver."
+        );
+    }
+
+    private void handlePostApprovedStock() {
+        DataStorage.StockRequest request = selectedApprovedStockRequest();
+        if (request == null) {
+            showError("No receiver-approved stock item is selected.");
+            return;
+        }
+
+        try {
+            String postedBy = currentUser.username == null || currentUser.username.isBlank() ? "staff" : currentUser.username;
+            DataStorage.getInstance().postApprovedStockRequest(request.id, postedBy);
+            reloadApprovedStockRequests();
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Approved stock " + request.requestCode + " was posted to inventory.",
+                    "Stock Posted",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            statusLabel.setForeground(new Color(46, 125, 50));
+            statusLabel.setText("Stock request " + request.requestCode + " posted to inventory.");
+        } catch (Exception ex) {
+            showError(ex.getMessage());
+        }
     }
 
     private File chooseImageFile() {

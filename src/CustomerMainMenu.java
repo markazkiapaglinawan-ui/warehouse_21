@@ -30,6 +30,9 @@ public class CustomerMainMenu {
     private final CardLayout contentLayout = new CardLayout();
     private static final int QR_SIZE = 280;
     private static final int LIMITED_STOCK_THRESHOLD = 20;
+    private static final double DELIVERY_FEE = 49.00;
+    private static final String CUSTOMER_SERVICE_LOGO = "assets/customer-service-logo.png";
+    private static final String PRE_ORDER_STATUS = "PRE-ORDER REQUESTED";
 
     private JPanel mainPanel;
     private JPanel contentPanel;
@@ -53,6 +56,8 @@ public class CustomerMainMenu {
     private JTextField profileAddressField;
     private JTextField profilePhoneField;
     private JTable profileHistoryTable;
+    private JTextArea profileCancelReasonArea;
+    private JTextArea customerServiceHistoryArea;
 
     public CustomerMainMenu(DataStorage.User currentUser, Runnable logoutHandler) {
         this.currentUser = currentUser;
@@ -88,15 +93,7 @@ public class CustomerMainMenu {
 
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         left.setOpaque(false);
-        categoryBox = new JComboBox<>(new String[]{
-                "All",
-                "Electronics",
-                "Office supplies",
-                "tools & equipment",
-                "Consumables",
-                "Spare Parts",
-                "Finished goods"
-        });
+        categoryBox = new JComboBox<>(InventoryForm.itemCategoryFilterOptions());
         searchField = new JTextField(16);
         JButton searchButton = new JButton("Search");
         styleHeaderButton(searchButton, new Color(25, 135, 84));
@@ -133,7 +130,10 @@ public class CustomerMainMenu {
             refreshCartPanel();
             showView(CART_VIEW);
         });
-        serviceButton.addActionListener(e -> showView(CUSTOMER_SERVICE_VIEW));
+        serviceButton.addActionListener(e -> {
+            refreshCustomerServiceHistory();
+            showView(CUSTOMER_SERVICE_VIEW);
+        });
         profileButton.addActionListener(e -> showProfilePanel());
         logoutButton.addActionListener(e -> {
             if (logoutHandler != null) {
@@ -238,30 +238,50 @@ public class CustomerMainMenu {
         JPanel body = new JPanel(new GridLayout(1, 2, 14, 0));
         body.setOpaque(false);
 
-        JPanel contactPanel = new JPanel();
-        contactPanel.setLayout(new BoxLayout(contactPanel, BoxLayout.Y_AXIS));
+        JPanel contactPanel = new JPanel(new BorderLayout(0, 16));
         contactPanel.setBackground(new Color(245, 246, 248));
         contactPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(205, 212, 222)),
                 new EmptyBorder(16, 16, 16, 16)
         ));
-        contactPanel.add(label("Need Help?", Font.BOLD, 22, new Color(33, 37, 41)));
-        contactPanel.add(Box.createVerticalStrut(12));
-        contactPanel.add(label("Phone: 0917-555-0198", Font.PLAIN, 16, new Color(33, 37, 41)));
-        contactPanel.add(Box.createVerticalStrut(8));
-        contactPanel.add(label("Email: support@ramja-warehouse.local", Font.PLAIN, 16, new Color(33, 37, 41)));
-        contactPanel.add(Box.createVerticalStrut(8));
-        contactPanel.add(label("Hours: Monday to Saturday, 8:00 AM - 6:00 PM", Font.PLAIN, 16, new Color(33, 37, 41)));
-        contactPanel.add(Box.createVerticalStrut(20));
+
+        JPanel contactTopPanel = new JPanel(new BorderLayout(0, 14));
+        contactTopPanel.setOpaque(false);
+        contactTopPanel.add(createNeedHelpHeader(), BorderLayout.NORTH);
         JTextArea notes = new JTextArea("For order concerns, include the order ID from your profile purchase history.");
         notes.setEditable(false);
         notes.setLineWrap(true);
         notes.setWrapStyleWord(true);
+        notes.setRows(2);
         notes.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         notes.setForeground(new Color(55, 65, 81));
         notes.setBackground(new Color(235, 241, 252));
         notes.setBorder(new EmptyBorder(10, 10, 10, 10));
-        contactPanel.add(notes);
+        contactTopPanel.add(notes, BorderLayout.CENTER);
+        contactPanel.add(contactTopPanel, BorderLayout.NORTH);
+
+        JPanel historyPanel = new JPanel(new BorderLayout(0, 8));
+        historyPanel.setOpaque(false);
+        JPanel historyHeader = new JPanel(new BorderLayout(8, 0));
+        historyHeader.setOpaque(false);
+        historyHeader.add(label("My Messages and Replies", Font.BOLD, 16, new Color(33, 37, 41)), BorderLayout.WEST);
+        JButton refreshReplies = new JButton("Refresh");
+        styleActionButton(refreshReplies, new Color(92, 107, 128));
+        refreshReplies.addActionListener(e -> refreshCustomerServiceHistory());
+        historyHeader.add(refreshReplies, BorderLayout.EAST);
+        historyPanel.add(historyHeader, BorderLayout.NORTH);
+
+        customerServiceHistoryArea = new JTextArea(10, 24);
+        customerServiceHistoryArea.setEditable(false);
+        customerServiceHistoryArea.setLineWrap(true);
+        customerServiceHistoryArea.setWrapStyleWord(true);
+        customerServiceHistoryArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        customerServiceHistoryArea.setBackground(Color.WHITE);
+        customerServiceHistoryArea.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JScrollPane historyScroll = new JScrollPane(customerServiceHistoryArea);
+        historyScroll.setPreferredSize(new Dimension(0, 220));
+        historyPanel.add(historyScroll, BorderLayout.CENTER);
+        contactPanel.add(historyPanel, BorderLayout.CENTER);
 
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(new Color(245, 246, 248));
@@ -326,6 +346,7 @@ public class CustomerMainMenu {
                 JOptionPane.showMessageDialog(mainPanel, "Customer service request submitted.", "Customer Service", JOptionPane.INFORMATION_MESSAGE);
                 orderField.setText("");
                 messageArea.setText("");
+                refreshCustomerServiceHistory();
             } catch (Exception exception) {
                 JOptionPane.showMessageDialog(mainPanel, exception.getMessage(), "Customer Service", JOptionPane.ERROR_MESSAGE);
             }
@@ -341,7 +362,86 @@ public class CustomerMainMenu {
         body.add(contactPanel);
         body.add(formPanel);
         servicePanel.add(body, BorderLayout.CENTER);
+        refreshCustomerServiceHistory();
         return servicePanel;
+    }
+
+    private JPanel createNeedHelpHeader() {
+        JPanel header = new JPanel(new BorderLayout(24, 0));
+        header.setOpaque(false);
+        header.setAlignmentX(Component.LEFT_ALIGNMENT);
+        header.setPreferredSize(new Dimension(0, 150));
+
+        JLabel logo = new JLabel(loadLocalImageIcon(CUSTOMER_SERVICE_LOGO, 132, 132));
+        logo.setPreferredSize(new Dimension(150, 142));
+        logo.setHorizontalAlignment(SwingConstants.LEFT);
+        logo.setVerticalAlignment(SwingConstants.CENTER);
+
+        JPanel textPanel = new JPanel();
+        textPanel.setOpaque(false);
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setBorder(new EmptyBorder(12, 0, 0, 0));
+        textPanel.add(label("Need Help?", Font.BOLD, 24, new Color(33, 37, 41)));
+        textPanel.add(Box.createVerticalStrut(10));
+        textPanel.add(label("Phone: 0917-555-0198", Font.PLAIN, 16, new Color(33, 37, 41)));
+        textPanel.add(Box.createVerticalStrut(8));
+        textPanel.add(label("Email: support@ramja-warehouse.local", Font.PLAIN, 16, new Color(33, 37, 41)));
+        textPanel.add(Box.createVerticalStrut(8));
+        textPanel.add(label("Hours: Monday to Saturday, 8:00 AM - 6:00 PM", Font.PLAIN, 16, new Color(33, 37, 41)));
+
+        header.add(logo, BorderLayout.WEST);
+        header.add(textPanel, BorderLayout.CENTER);
+        return header;
+    }
+
+    private Icon loadLocalImageIcon(String imagePath, int maxWidth, int maxHeight) {
+        try {
+            BufferedImage image = javax.imageio.ImageIO.read(new File(imagePath));
+            if (image == null) {
+                return null;
+            }
+            double scale = Math.min((double) maxWidth / image.getWidth(), (double) maxHeight / image.getHeight());
+            int width = Math.max(1, (int) Math.round(image.getWidth() * scale));
+            int height = Math.max(1, (int) Math.round(image.getHeight() * scale));
+            Image scaled = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private void refreshCustomerServiceHistory() {
+        if (customerServiceHistoryArea == null) {
+            return;
+        }
+        try {
+            List<DataStorage.CustomerServiceMessage> messages = DataStorage.getInstance()
+                    .getCustomerServiceMessagesForCustomer(currentUser.username);
+            if (messages.isEmpty()) {
+                customerServiceHistoryArea.setText("No customer service messages yet.");
+                return;
+            }
+
+            StringBuilder builder = new StringBuilder();
+            for (DataStorage.CustomerServiceMessage message : messages) {
+                builder.append("Date: ").append(message.createdAt).append('\n');
+                builder.append("Subject: ").append(message.subject).append('\n');
+                builder.append("Order ID: ").append(message.orderCode.isBlank() ? "-" : message.orderCode).append('\n');
+                builder.append("Concern: ").append(message.message).append('\n');
+                if (message.reply.isBlank()) {
+                    builder.append("Reply: Waiting for staff/admin reply.");
+                } else {
+                    builder.append("Reply: ").append(message.reply).append('\n');
+                    builder.append("Replied by: ").append(message.repliedBy.isBlank() ? "Staff/Admin" : message.repliedBy).append('\n');
+                    builder.append("Replied at: ").append(message.repliedAt.isBlank() ? "-" : message.repliedAt);
+                }
+                builder.append("\n\n");
+            }
+            customerServiceHistoryArea.setText(builder.toString().trim());
+            customerServiceHistoryArea.setCaretPosition(0);
+        } catch (Exception exception) {
+            customerServiceHistoryArea.setText(exception.getMessage());
+        }
     }
 
     private JPanel buildPaymentPanel() {
@@ -451,6 +551,7 @@ public class CustomerMainMenu {
 
         profileHistoryTable = new JTable();
         profileHistoryTable.setRowHeight(24);
+        profileHistoryTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         profileHistoryTable.setModel(new DefaultTableModel(new Object[][]{}, new Object[]{"Order ID", "Item", "Qty", "Status", "Delivery ETA"}) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -458,11 +559,44 @@ public class CustomerMainMenu {
             }
         });
         historyPanel.add(new JScrollPane(profileHistoryTable), BorderLayout.CENTER);
+        historyPanel.add(createProfileCancelOrderPanel(), BorderLayout.SOUTH);
 
         body.add(formPanel);
         body.add(historyPanel);
         profilePanel.add(body, BorderLayout.CENTER);
         return profilePanel;
+    }
+
+    private JPanel createProfileCancelOrderPanel() {
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(10, 0, 0, 0));
+
+        JLabel title = label("Cancel Selected Order", Font.BOLD, 14, new Color(33, 37, 41));
+        panel.add(title, BorderLayout.NORTH);
+
+        profileCancelReasonArea = new JTextArea(3, 20);
+        profileCancelReasonArea.setLineWrap(true);
+        profileCancelReasonArea.setWrapStyleWord(true);
+        profileCancelReasonArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        profileCancelReasonArea.setBorder(new EmptyBorder(6, 6, 6, 6));
+
+        JPanel form = new JPanel(new BorderLayout(0, 8));
+        form.setOpaque(false);
+        form.add(new JScrollPane(profileCancelReasonArea), BorderLayout.CENTER);
+
+        JButton cancelOrderButton = new JButton("Cancel Order");
+        styleActionButton(cancelOrderButton, new Color(211, 47, 47));
+        cancelOrderButton.setPreferredSize(new Dimension(150, 36));
+        cancelOrderButton.addActionListener(e -> cancelSelectedProfileOrder());
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        actions.setOpaque(false);
+        actions.add(cancelOrderButton);
+        form.add(actions, BorderLayout.SOUTH);
+
+        panel.add(form, BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel createProductCard(Product product) {
@@ -485,7 +619,7 @@ public class CustomerMainMenu {
         meta.add(label(stockDisplayText(product), Font.BOLD, 13, stockDisplayColor(product)));
         card.add(meta, BorderLayout.CENTER);
 
-        int maxQty = product.stock > 0 ? 9999 : 1;
+        int maxQty = 9999;
         JSpinner qtySpinner = new JSpinner(new SpinnerNumberModel(1, 1, maxQty, 1));
         qtySpinner.setPreferredSize(new Dimension(58, 30));
         JComponent editor = qtySpinner.getEditor();
@@ -514,16 +648,13 @@ public class CustomerMainMenu {
             }
         });
 
-        JButton addToCart = new JButton(product.stock > 0 ? "Add to Cart" : "Out of Stock.");
-        JButton buyNow = new JButton(product.stock > 0 ? "Buy Now" : "Unavailable");
-        styleActionButton(addToCart, new Color(25, 118, 210));
-        styleActionButton(buyNow, product.stock > 0 ? new Color(46, 125, 50) : new Color(107, 114, 128));
+        JButton addToCart = new JButton("Add to Cart");
+        JButton buyNow = new JButton(product.stock > 0 ? "Buy Now" : "Pre-Order");
+        styleActionButton(addToCart, product.stock > 0 ? new Color(25, 118, 210) : new Color(194, 65, 12));
+        styleActionButton(buyNow, product.stock > 0 ? new Color(46, 125, 50) : new Color(194, 65, 12));
         if (product.stock <= 0) {
-            addToCart.setEnabled(false);
-            buyNow.setEnabled(false);
-            qtySpinner.setEnabled(false);
-            minus.setEnabled(false);
-            plus.setEnabled(false);
+            addToCart.setToolTipText("This item has no stock now. Ordering will create a pre-order.");
+            buyNow.setToolTipText("This item has no stock now. Ordering will create a pre-order.");
         }
 
         addToCart.addActionListener(e -> {
@@ -577,7 +708,7 @@ public class CustomerMainMenu {
         int shownCount = 0;
 
         for (Product product : products) {
-            boolean matchCategory = "All".equals(category) || product.category.equalsIgnoreCase(category);
+            boolean matchCategory = matchesSelectedCategory(product.category, category);
             boolean matchSearch = keyword.isEmpty() || product.name.toLowerCase().contains(keyword);
             if (matchCategory && matchSearch) {
                 cardsPanel.add(createProductCard(product));
@@ -594,6 +725,24 @@ public class CustomerMainMenu {
         cardsPanel.repaint();
     }
 
+    private boolean matchesSelectedCategory(String productCategory, String selectedCategory) {
+        if (selectedCategory == null || "All".equalsIgnoreCase(selectedCategory)) {
+            return true;
+        }
+        return normalizeCategory(productCategory).equals(normalizeCategory(selectedCategory));
+    }
+
+    private String normalizeCategory(String category) {
+        if (category == null) {
+            return "";
+        }
+        return category
+                .trim()
+                .toLowerCase(Locale.US)
+                .replace("&", "and")
+                .replaceAll("[^a-z0-9]", "");
+    }
+
     private void refreshCartPanel() {
         cartItemsPanel.removeAll();
         double subtotal = 0;
@@ -607,7 +756,7 @@ public class CustomerMainMenu {
             for (Map.Entry<Product, Integer> entry : items.entrySet()) {
                 Product product = entry.getKey();
                 int qty = entry.getValue();
-                subtotal += product.price * qty;
+                subtotal += product.price * availableQuantity(product, qty);
                 cartItemsPanel.add(createCartRow(product, qty));
                 cartItemsPanel.add(Box.createVerticalStrut(10));
             }
@@ -658,7 +807,9 @@ public class CustomerMainMenu {
             refreshCartPanel();
         });
 
-        JLabel lineTotal = new JLabel("Total: " + currencyFormat.format(product.price * qty));
+        int availableQty = availableQuantity(product, qty);
+        String totalText = availableQty > 0 ? currencyFormat.format(product.price * availableQty) : "No payment now";
+        JLabel lineTotal = new JLabel("Due now: " + totalText);
         lineTotal.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         JPanel qtyPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
@@ -674,7 +825,7 @@ public class CustomerMainMenu {
     }
 
     private JPanel createOrderSummaryPanel(Map<Product, Integer> items, double subtotal) {
-        final double deliveryFee = subtotal > 0 ? 49.00 : 0.0;
+        final double deliveryFee = deliveryFeeFor(subtotal);
         final double total = subtotal + deliveryFee;
 
         JPanel panel = new JPanel(new BorderLayout(0, 8));
@@ -697,12 +848,22 @@ public class CustomerMainMenu {
         for (Map.Entry<Product, Integer> entry : items.entrySet()) {
             Product product = entry.getKey();
             int qty = entry.getValue();
-            double lineTotal = product.price * qty;
-            JLabel line = new JLabel(product.name + " " + splitQuantityText(product, qty) + "  -  " + currencyFormat.format(lineTotal));
+            int availableQty = availableQuantity(product, qty);
+            int preOrderQty = preOrderQuantity(product, qty);
+            double lineTotal = product.price * availableQty;
+            String amountText = availableQty > 0 ? currencyFormat.format(lineTotal) : "No payment now";
+            JLabel line = new JLabel(product.name + " " + splitQuantityText(product, qty) + "  -  " + amountText);
             line.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             line.setForeground(new Color(51, 65, 85));
             body.add(line);
             body.add(Box.createVerticalStrut(4));
+            if (preOrderQty > 0) {
+                JLabel preOrderLine = new JLabel("Pre-order request: " + preOrderQty + " for next stock");
+                preOrderLine.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                preOrderLine.setForeground(new Color(194, 65, 12));
+                body.add(preOrderLine);
+                body.add(Box.createVerticalStrut(4));
+            }
         }
 
         body.add(Box.createVerticalStrut(6));
@@ -732,6 +893,10 @@ public class CustomerMainMenu {
         return row;
     }
 
+    private double deliveryFeeFor(double subtotal) {
+        return subtotal > 0 ? DELIVERY_FEE : 0.0;
+    }
+
     private void openPaymentPanel(Map<Product, Integer> items, boolean preOrder) {
         if (!canCreateOrderItems(items)) {
             return;
@@ -740,16 +905,25 @@ public class CustomerMainMenu {
         paymentItems = items;
         paymentIsPreOrder = preOrder || hasPreOrderQuantity(items);
 
-        double total = 0;
-        int totalQty = 0;
+        double subtotal = 0;
+        int checkoutQty = 0;
+        int preOrderQty = 0;
         for (Map.Entry<Product, Integer> entry : items.entrySet()) {
-            total += entry.getKey().price * entry.getValue();
-            totalQty += entry.getValue();
+            int availableQty = availableQuantity(entry.getKey(), entry.getValue());
+            int excessQty = preOrderQuantity(entry.getKey(), entry.getValue());
+            subtotal += entry.getKey().price * availableQty;
+            checkoutQty += availableQty;
+            preOrderQty += excessQty;
         }
+        double total = subtotal + deliveryFeeFor(subtotal);
 
         LocalDate regularEstimatedDate = LocalDate.now().plusDays(2);
         LocalDate preOrderEstimatedDate = LocalDate.now().plusDays(7);
-        paymentSummaryLabel.setText("Items: " + totalQty + " | Amount: " + currencyFormat.format(total));
+        String summary = "Checkout Qty: " + checkoutQty + " | Due Now: " + currencyFormat.format(total);
+        if (preOrderQty > 0) {
+            summary += " | Pre-order Qty: " + preOrderQty;
+        }
+        paymentSummaryLabel.setText(summary);
         if (paymentIsPreOrder) {
             paymentDeliveryLabel.setText("Estimated Delivery: Available stock by " + regularEstimatedDate
                     + " | Pre-order by " + preOrderEstimatedDate);
@@ -773,17 +947,26 @@ public class CustomerMainMenu {
         }
 
         String paymentOption = (String) paymentOptionBox.getSelectedItem();
+        double totalDueNow = computePaymentTotal();
+        if (totalDueNow <= 0.0) {
+            String orderItemsSnapshot = summarizeOrderItems();
+            if (finalizeCheckout(name, address, phone, "No Payment Due")) {
+                showCustomerReceipt(name, orderItemsSnapshot, totalDueNow, "No Payment Due", "-", "-");
+            }
+            return;
+        }
         if ("QR Code".equals(paymentOption)) {
             String orderId = generateOrderId();
             String orderItemsSnapshot = summarizeOrderItems();
-            double totalAmountSnapshot = computePaymentTotal();
+            double totalAmountSnapshot = totalDueNow;
             showQrCheckoutDialog(name, orderId, summarizeOrderItems(), totalAmountSnapshot, () -> {
-                finalizeCheckout(name, address, phone, paymentOption);
-                showCustomerReceipt(name, orderItemsSnapshot, totalAmountSnapshot, paymentOption, "-", "-");
+                if (finalizeCheckout(name, address, phone, paymentOption)) {
+                    showCustomerReceipt(name, orderItemsSnapshot, totalAmountSnapshot, paymentOption, "-", "-");
+                }
             });
             return;
         }
-        showCashCheckoutDialog(name, address, phone, paymentOption, computePaymentTotal());
+        showCashCheckoutDialog(name, address, phone, paymentOption, totalDueNow);
     }
 
     private boolean canCreateOrderItems(Map<Product, Integer> items) {
@@ -800,10 +983,6 @@ public class CustomerMainMenu {
     }
 
     private boolean canOrderProduct(Product product) {
-        if (product.stock <= 0) {
-            showOutOfStockMessage();
-            return false;
-        }
         return true;
     }
 
@@ -891,7 +1070,7 @@ public class CustomerMainMenu {
 
     private String stockDisplayText(Product product) {
         if (product.stock <= 0) {
-            return "Out of Stock.";
+            return "Out of Stock - Pre-Order available";
         }
         if (isLimitedStock(product)) {
             return "Limited only: " + product.stock + " available";
@@ -961,6 +1140,59 @@ public class CustomerMainMenu {
         }
     }
 
+    private void cancelSelectedProfileOrder() {
+        int selectedRow = profileHistoryTable == null ? -1 : profileHistoryTable.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(mainPanel, "Select an order from your purchase history first.", "Cancel Order", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String orderId = String.valueOf(profileHistoryTable.getValueAt(selectedRow, 0));
+        String status = String.valueOf(profileHistoryTable.getValueAt(selectedRow, 3));
+        String upperStatus = status.toUpperCase();
+        if (upperStatus.contains("CANCELLED")) {
+            JOptionPane.showMessageDialog(mainPanel, "This order is already cancelled.", "Cancel Order", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (upperStatus.contains("DELIVERED")) {
+            JOptionPane.showMessageDialog(mainPanel, "Delivered orders cannot be cancelled from the profile.", "Cancel Order", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String reason = profileCancelReasonArea == null ? "" : profileCancelReasonArea.getText().trim();
+        if (reason.isEmpty()) {
+            JOptionPane.showMessageDialog(mainPanel, "Please enter the reason for cancelling this order.", "Cancel Order", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(
+                mainPanel,
+                "Cancel order " + orderId + " and notify staff/admin?",
+                "Cancel Order",
+                JOptionPane.YES_NO_OPTION
+        );
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        String customerName = currentUser.fullName == null || currentUser.fullName.isBlank()
+                ? currentUser.username
+                : currentUser.fullName;
+        try {
+            DataStorage.getInstance().cancelCustomerOrder(orderId, currentUser.username, customerName, reason);
+            profileCancelReasonArea.setText("");
+            refreshProfileHistoryTable();
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Order " + orderId + " was cancelled. Staff and admin have been notified.",
+                    "Order Cancelled",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        } catch (Exception exception) {
+            JOptionPane.showMessageDialog(mainPanel, exception.getMessage(), "Cancel Failed", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private void refreshProfileHistoryTable() {
         if (profileHistoryTable == null) {
             return;
@@ -984,9 +1216,13 @@ public class CustomerMainMenu {
             model.addRow(new Object[]{order.id, order.itemName, order.quantity, order.status, estimateDelivery(order)});
         }
         profileHistoryTable.setModel(model);
+        profileHistoryTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     private String estimateDelivery(DataStorage.Order order) {
+        if (order.status != null && order.status.toUpperCase().contains("CANCELLED")) {
+            return "Cancelled";
+        }
         try {
             LocalDate orderDate = LocalDate.parse(order.date);
             int leadDays = order.status != null && order.status.toUpperCase().contains("PRE-ORDER") ? 7 : 2;
@@ -1000,12 +1236,13 @@ public class CustomerMainMenu {
         products.clear();
         cart.clear();
         for (DataStorage.Item item : DataStorage.getInstance().getItems()) {
+            int customerStock = isRouterItem(item.name) ? 0 : item.quantity;
             Product product = new Product(
                     item.id,
                     item.name,
                     item.category == null || item.category.isBlank() ? "General" : item.category,
                     item.price,
-                    item.quantity,
+                    customerStock,
                     item.imagePath == null || item.imagePath.isBlank()
                             ? imageForItemName(item.name, item.category)
                             : item.imagePath
@@ -1013,6 +1250,10 @@ public class CustomerMainMenu {
             products.add(product);
             cart.put(product, 0);
         }
+    }
+
+    private boolean isRouterItem(String itemName) {
+        return itemName != null && itemName.trim().equalsIgnoreCase("Router");
     }
 
     private String imageForItemName(String itemName, String category) {
@@ -1122,11 +1363,11 @@ public class CustomerMainMenu {
     }
 
     private double computePaymentTotal() {
-        double total = 0;
+        double subtotal = 0;
         for (Map.Entry<Product, Integer> entry : paymentItems.entrySet()) {
-            total += entry.getKey().price * entry.getValue();
+            subtotal += entry.getKey().price * availableQuantity(entry.getKey(), entry.getValue());
         }
-        return total;
+        return subtotal + deliveryFeeFor(subtotal);
     }
 
     private String summarizeOrderItems() {
@@ -1135,7 +1376,7 @@ public class CustomerMainMenu {
             if (!builder.isEmpty()) {
                 builder.append(", ");
             }
-            builder.append(entry.getKey().name).append(" x").append(entry.getValue());
+            builder.append(entry.getKey().name).append(" ").append(splitQuantityText(entry.getKey(), entry.getValue()));
         }
         return builder.toString();
     }
@@ -1145,7 +1386,7 @@ public class CustomerMainMenu {
         return "ORD-" + (System.currentTimeMillis() % 1000000) + "-" + String.format(Locale.US, "%03d", orderSequence);
     }
 
-    private void finalizeCheckout(String name, String address, String phone, String paymentMethod) {
+    private boolean finalizeCheckout(String name, String address, String phone, String paymentMethod) {
         List<DataStorage.Order> createdOrders = new java.util.ArrayList<>();
         try {
             for (Map.Entry<Product, Integer> entry : paymentItems.entrySet()) {
@@ -1159,8 +1400,9 @@ public class CustomerMainMenu {
                     createdOrders.add(order);
                 }
                 if (preOrderQty > 0) {
-                    DataStorage.Order preOrder = createPaidOrder(name, product, preOrderQty, "PRE-ORDER", paymentMethod);
+                    DataStorage.Order preOrder = createPreOrder(name, product, preOrderQty);
                     DataStorage.getInstance().addOrder(preOrder);
+                    DataStorage.getInstance().addStockRequest(createPreOrderStockRequest(product, preOrderQty, preOrder.id));
                     createdOrders.add(preOrder);
                 }
             }
@@ -1173,7 +1415,7 @@ public class CustomerMainMenu {
                 message = "This item is already out of stock.";
             }
             JOptionPane.showMessageDialog(mainPanel, message, "Checkout Failed", JOptionPane.ERROR_MESSAGE);
-            return;
+            return false;
         }
 
         currentUser.fullName = name;
@@ -1182,7 +1424,7 @@ public class CustomerMainMenu {
         userLabel.setText(name);
 
         String successMessage = paymentIsPreOrder
-                ? "Order placed. Extra quantities were placed as pre-orders for the next stock. Payment: " + paymentMethod + "."
+                ? "Available stock was checked out. Extra quantities were requested as pre-orders for the next stock. Payment: " + paymentMethod + "."
                 : "Order placed with " + paymentMethod + ".";
         JOptionPane.showMessageDialog(mainPanel, successMessage + " Orders created: " + createdOrders.size(), "Success", JOptionPane.INFORMATION_MESSAGE);
 
@@ -1196,6 +1438,7 @@ public class CustomerMainMenu {
         refreshCartPanel();
         refreshProfileHistoryTable();
         showView(SHOP_VIEW);
+        return true;
     }
 
     private DataStorage.Order createPaidOrder(String name, Product product, int quantity, String status, String paymentMethod) {
@@ -1211,6 +1454,38 @@ public class CustomerMainMenu {
                 currentUser.username,
                 "",
                 ""
+        );
+    }
+
+    private DataStorage.Order createPreOrder(String name, Product product, int quantity) {
+        return new DataStorage.Order(
+                generateOrderId(),
+                name,
+                product.itemCode,
+                quantity,
+                PRE_ORDER_STATUS,
+                LocalDate.now().toString(),
+                false,
+                "Pre-order Request",
+                currentUser.username,
+                "",
+                ""
+        );
+    }
+
+    private DataStorage.StockRequest createPreOrderStockRequest(Product product, int quantity, String orderId) {
+        String requestedBy = currentUser.username == null || currentUser.username.isBlank()
+                ? currentUser.fullName
+                : currentUser.username;
+        if (requestedBy == null || requestedBy.isBlank()) {
+            requestedBy = "customer";
+        }
+        return new DataStorage.StockRequest(
+                "PRE-" + orderId,
+                requestedBy,
+                UserRole.CUSTOMER.name(),
+                product.itemCode,
+                quantity
         );
     }
 
@@ -1351,8 +1626,9 @@ public class CustomerMainMenu {
                 return;
             }
             dialog.dispose();
-            finalizeCheckout(name, address, phone, paymentMethod);
-            showCustomerReceipt(name, orderItemsSnapshot, totalAmount, paymentMethod, String.format(Locale.US, "%.2f", cash), changeField.getText());
+            if (finalizeCheckout(name, address, phone, paymentMethod)) {
+                showCustomerReceipt(name, orderItemsSnapshot, totalAmount, paymentMethod, String.format(Locale.US, "%.2f", cash), changeField.getText());
+            }
         });
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
@@ -1405,6 +1681,11 @@ public class CustomerMainMenu {
     }
 
     private void showCustomerReceipt(String customerName, String orderItems, double total, String paymentMethod, String cashReceived, String change) {
+        String status = "No Payment Due".equals(paymentMethod)
+                ? "PRE-ORDER REQUESTED"
+                : orderItems.toLowerCase(Locale.US).contains("pre-order")
+                ? "PAID FOR AVAILABLE STOCK"
+                : "PAID";
         String receipt = String.format(Locale.US,
                 "RECEIPT%n" +
                         "Date: %s%n" +
@@ -1414,8 +1695,8 @@ public class CustomerMainMenu {
                         "Payment Method: %s%n" +
                         "Cash Received: %s%n" +
                         "Change: %s%n" +
-                        "Status: PAID%n",
-                LocalDate.now(), customerName, orderItems, total, paymentMethod, cashReceived, change);
+                        "Status: %s%n",
+                LocalDate.now(), customerName, orderItems, total, paymentMethod, cashReceived, change, status);
 
         JTextArea area = new JTextArea(receipt);
         area.setEditable(false);

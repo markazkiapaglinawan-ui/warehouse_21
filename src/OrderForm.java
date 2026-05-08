@@ -16,8 +16,10 @@ public class OrderForm {
     private static final String STATUS_CARD = "status";
     private static final String SEARCH_CARD = "search";
     private static final String CANCEL_CARD = "cancel";
+    private static final String STOCK_CARD = "stock";
     private static final int QR_DISPLAY_SIZE = 340;
 
+    private final DataStorage.User currentUser;
     private final UserRole userRole;
     private final CardLayout contentLayout = new CardLayout();
 
@@ -43,12 +45,21 @@ public class OrderForm {
     private JComboBox<String> cancelOrderIdBox;
     private JTextArea cancelPreviewArea;
 
+    private JComboBox<String> stockItemBox;
+    private JSpinner stockQuantitySpinner;
+    private JTextArea stockPreviewArea;
+
     public OrderForm() {
-        this(UserRole.ADMIN);
+        this(new DataStorage.User("admin", "", UserRole.ADMIN));
     }
 
     public OrderForm(UserRole userRole) {
-        this.userRole = userRole;
+        this(new DataStorage.User(userRole.getDisplayName().toLowerCase(Locale.US), "", userRole));
+    }
+
+    public OrderForm(DataStorage.User currentUser) {
+        this.currentUser = currentUser == null ? new DataStorage.User("admin", "", UserRole.ADMIN) : currentUser;
+        this.userRole = this.currentUser.role;
         if (mainPanel == null) {
             buildUi();
         } else {
@@ -84,6 +95,7 @@ public class OrderForm {
         contentPanel.add(createStatusPanel(), STATUS_CARD);
         contentPanel.add(createSearchPanel(), SEARCH_CARD);
         contentPanel.add(createCancelPanel(), CANCEL_CARD);
+        contentPanel.add(createStockPanel(), STOCK_CARD);
 
         statusLabel = new JLabel(" ");
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -100,7 +112,7 @@ public class OrderForm {
     private JPanel createOverviewPanel() {
         JPanel panel = createSurfacePanel();
         panel.setLayout(new BorderLayout(16, 0));
-        JLabel message = new JLabel("<html><div style='width:520px;'>Use the Orders dropdown in the top navigation bar to open Create Order, Update Status, Search Order, or Cancel Order in this same panel.</div></html>");
+        JLabel message = new JLabel("<html><div style='width:520px;'>Use the Orders dropdown in the top navigation bar to open Create Order, Add Stocks, Update Status, Search Order, or Cancel Order in this same panel.</div></html>");
         message.setFont(new Font("Segoe UI", Font.BOLD, 22));
         message.setForeground(ModuleTheme.SURFACE_TEXT);
         JPanel textWrap = new JPanel(new BorderLayout());
@@ -187,6 +199,7 @@ public class OrderForm {
         contentPanel.add(createStatusPanel(), STATUS_CARD);
         contentPanel.add(createSearchPanel(), SEARCH_CARD);
         contentPanel.add(createCancelPanel(), CANCEL_CARD);
+        contentPanel.add(createStockPanel(), STOCK_CARD);
     }
 
     private JPanel createCreatePanel() {
@@ -276,6 +289,35 @@ public class OrderForm {
         panel.add(topPanel, BorderLayout.BEFORE_FIRST_LINE);
         panel.add(new JScrollPane(cancelPreviewArea), BorderLayout.CENTER);
         panel.add(createButtonRow(cancelButton), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel createStockPanel() {
+        JPanel panel = createSurfacePanel();
+        panel.setLayout(new BorderLayout(0, 16));
+
+        stockItemBox = new JComboBox<>();
+        stockItemBox.setEditable(false);
+        stockItemBox.addActionListener(event -> updateStockPreview());
+        stockQuantitySpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100000, 1));
+        stockQuantitySpinner.addChangeListener(event -> updateStockPreview());
+        stockPreviewArea = createTextArea();
+        stockPreviewArea.setEditable(false);
+
+        JButton submitButton = createActionButton("Submit Stock Request");
+        submitButton.addActionListener(event -> handleAddStocks());
+
+        JPanel body = new JPanel(new BorderLayout(0, 12));
+        body.setOpaque(false);
+        body.add(createFormStack(
+                "Item to Restock", stockItemBox,
+                "Quantity to Add", stockQuantitySpinner
+        ), BorderLayout.NORTH);
+        body.add(new JScrollPane(stockPreviewArea), BorderLayout.CENTER);
+
+        panel.add(createSectionTitle("Add Stocks"), BorderLayout.NORTH);
+        panel.add(body, BorderLayout.CENTER);
+        panel.add(createButtonRow(submitButton), BorderLayout.SOUTH);
         return panel;
     }
 
@@ -420,6 +462,15 @@ public class OrderForm {
         contentLayout.show(contentPanel, CANCEL_CARD);
     }
 
+    private void showStockPanel() {
+        descriptionLabel.setText("Submit incoming stock for receiver approval before it can be posted to inventory.");
+        clearStatus();
+        reloadStockItemOptions();
+        stockQuantitySpinner.setValue(1);
+        updateStockPreview();
+        contentLayout.show(contentPanel, STOCK_CARD);
+    }
+
     private void handleCreateOrder() {
         try {
             String orderId = createOrderIdField.getText().trim();
@@ -459,6 +510,41 @@ public class OrderForm {
                     JOptionPane.INFORMATION_MESSAGE
             );
             showSuccess("Order " + orderId + " created successfully.");
+        } catch (Exception ex) {
+            showError(ex.getMessage());
+        }
+    }
+
+    private void handleAddStocks() {
+        try {
+            String selectedItem = (String) stockItemBox.getSelectedItem();
+            String itemCode = selectedStockItemCode(selectedItem);
+            int quantity = (Integer) stockQuantitySpinner.getValue();
+            if (itemCode.isBlank()) {
+                throw new IllegalArgumentException("Select an item to restock.");
+            }
+            if (quantity <= 0) {
+                throw new IllegalArgumentException("Stock quantity must be greater than zero.");
+            }
+
+            String requestCode = "STK-" + System.currentTimeMillis();
+            DataStorage.StockRequest request = new DataStorage.StockRequest(
+                    requestCode,
+                    currentUser.username == null || currentUser.username.isBlank() ? userRole.getDisplayName() : currentUser.username,
+                    userRole.name(),
+                    itemCode,
+                    quantity
+            );
+            DataStorage.getInstance().addStockRequest(request);
+            reloadStockItemOptions();
+            stockQuantitySpinner.setValue(1);
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Stock request " + requestCode + " was submitted to the receiver for approval.",
+                    "Stock Request Submitted",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            showSuccess("Stock request " + requestCode + " submitted for receiver approval.");
         } catch (Exception ex) {
             showError(ex.getMessage());
         }
@@ -789,9 +875,58 @@ public class OrderForm {
         }
     }
 
+    private void reloadStockItemOptions() {
+        stockItemBox.removeAllItems();
+        for (DataStorage.Item item : DataStorage.getInstance().getItems()) {
+            stockItemBox.addItem(stockItemDisplay(item));
+        }
+        if (stockItemBox.getItemCount() > 0) {
+            stockItemBox.setSelectedIndex(0);
+        }
+    }
+
+    private void updateStockPreview() {
+        if (stockPreviewArea == null) {
+            return;
+        }
+        String selectedItem = stockItemBox == null ? "" : (String) stockItemBox.getSelectedItem();
+        String itemCode = selectedStockItemCode(selectedItem);
+        DataStorage.Item item = itemCode.isBlank() ? null : DataStorage.getInstance().findItemById(itemCode);
+        if (item == null) {
+            stockPreviewArea.setText("No inventory item is available for stock requests.");
+            return;
+        }
+        int quantityToAdd = stockQuantitySpinner == null ? 0 : (Integer) stockQuantitySpinner.getValue();
+        stockPreviewArea.setText(
+                "Item ID: " + item.id + "\n" +
+                "Name: " + item.name + "\n" +
+                "Category: " + item.category + "\n" +
+                "Current Stock: " + item.quantity + "\n" +
+                "Quantity to Add: " + quantityToAdd + "\n" +
+                "Stock After Posting: " + (item.quantity + quantityToAdd) + "\n\n" +
+                "This request will be sent to the receiver. Inventory stock will not increase until the receiver approves it and staff posts the approved stock."
+        );
+    }
+
+    private String stockItemDisplay(DataStorage.Item item) {
+        return item.id + " | " + item.name + " | Current: " + item.quantity;
+    }
+
+    private String selectedStockItemCode(String selectedItem) {
+        if (selectedItem == null) {
+            return "";
+        }
+        int separatorIndex = selectedItem.indexOf(" | ");
+        return separatorIndex < 0 ? selectedItem.trim() : selectedItem.substring(0, separatorIndex).trim();
+    }
+
     private void reloadCancelOrderOptions() {
         cancelOrderIdBox.removeAllItems();
         for (DataStorage.Order order : DataStorage.getInstance().getOrders()) {
+            String status = order.status == null ? "" : order.status.toUpperCase();
+            if (status.contains("CANCELLED")) {
+                continue;
+            }
             cancelOrderIdBox.addItem(order.id);
         }
         if (cancelOrderIdBox.getItemCount() > 0) {
@@ -826,6 +961,7 @@ public class OrderForm {
     public void showAction(String actionKey) {
         switch (actionKey) {
             case "create" -> showCreatePanel();
+            case "stock" -> showStockPanel();
             case "status" -> showStatusPanel();
             case "search" -> showSearchPanel();
             case "cancel" -> showCancelPanel();

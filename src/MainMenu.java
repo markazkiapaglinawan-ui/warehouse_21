@@ -53,12 +53,12 @@ public class MainMenu {
         this.currentUser = currentUser;
         this.userRole = currentUser.role;
         this.logoutHandler = logoutHandler;
-        this.inventoryForm = new InventoryForm(userRole);
-        this.orderForm = new OrderForm(userRole);
+        this.inventoryForm = new InventoryForm(currentUser);
+        this.orderForm = new OrderForm(currentUser);
         this.userForm = new UserForm(userRole);
         this.reportForm = new ReportForm(userRole);
-        this.receiverForm = new ReceiverForm();
-        this.customerServiceForm = new CustomerServiceForm();
+        this.receiverForm = new ReceiverForm(currentUser);
+        this.customerServiceForm = new CustomerServiceForm(currentUser);
 
         if (mainPanel == null) {
             buildUi();
@@ -249,6 +249,10 @@ public class MainMenu {
                         showModule("receiver");
                         receiverForm.showQueueView();
                     }),
+                    action("Stock Approvals", () -> {
+                        showModule("receiver");
+                        receiverForm.showStockApprovalsView();
+                    }),
                     action("History", () -> {
                         showModule("receiver");
                         receiverForm.showHistoryView();
@@ -257,6 +261,7 @@ public class MainMenu {
         }
         return new NamedRunnable[]{
                 action("Create Order", () -> orderForm.showAction("create")),
+                action("Add Stocks", () -> orderForm.showAction("stock")),
                 action("Update Status", () -> orderForm.showAction("status")),
                 action("Search Order", () -> orderForm.showAction("search")),
                 action("Cancel Order", () -> orderForm.showAction("cancel"))

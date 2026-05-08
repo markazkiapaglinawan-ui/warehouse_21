@@ -141,6 +141,182 @@ public class DataStorage {
         }
     }
 
+    public synchronized void addStockRequest(StockRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Stock request is required.");
+        }
+        if (request.itemCode == null || request.itemCode.isBlank()) {
+            throw new IllegalArgumentException("Select an item before adding stock.");
+        }
+        if (request.quantity <= 0) {
+            throw new IllegalArgumentException("Stock quantity must be greater than zero.");
+        }
+
+        String sql = """
+                INSERT INTO stock_requests
+                    (request_code, requested_by, requested_role, item_id, quantity, status)
+                SELECT ?, ?, ?, id, ?, 'PENDING'
+                FROM items
+                WHERE item_code = ?
+                """;
+        try (Connection connection = openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, request.requestCode);
+            statement.setString(2, request.requestedBy);
+            statement.setString(3, request.requestedRole);
+            statement.setInt(4, request.quantity);
+            statement.setString(5, request.itemCode);
+
+            if (statement.executeUpdate() == 0) {
+                throw new IllegalArgumentException("Item '" + request.itemCode + "' not found.");
+            }
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to add stock request.", e);
+        }
+    }
+
+    public synchronized List<StockRequest> getStockRequests() {
+        return getStockRequestsByStatus(null);
+    }
+
+    public synchronized List<StockRequest> getStockRequestsByStatus(String statusFilter) {
+        String sql = """
+                SELECT sr.id, sr.request_code, sr.requested_by, sr.requested_role,
+                       i.item_code, i.name AS item_name, i.category, i.quantity AS current_quantity,
+                       sr.quantity, sr.status, sr.requested_at, sr.approved_by, sr.approved_at,
+                       sr.posted_by, sr.posted_at
+                FROM stock_requests sr
+                JOIN items i ON i.id = sr.item_id
+                """;
+        if (statusFilter != null && !statusFilter.isBlank()) {
+            sql += " WHERE sr.status = ?";
+        }
+        sql += " ORDER BY sr.requested_at DESC, sr.id DESC";
+
+        List<StockRequest> requests = new ArrayList<>();
+        try (Connection connection = openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            if (statusFilter != null && !statusFilter.isBlank()) {
+                statement.setString(1, statusFilter.trim().toUpperCase());
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    requests.add(readStockRequest(resultSet));
+                }
+            }
+            return requests;
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to load stock requests.", e);
+        }
+    }
+
+    public synchronized void approveStockRequest(int requestId, String approvedBy) {
+        if (requestId <= 0) {
+            throw new IllegalArgumentException("Select a stock request first.");
+        }
+
+        String sql = """
+                UPDATE stock_requests
+                SET status = 'APPROVED',
+                    approved_by = ?,
+                    approved_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND status = 'PENDING'
+                """;
+        try (Connection connection = openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, approvedBy == null || approvedBy.isBlank() ? "receiver" : approvedBy.trim());
+            statement.setInt(2, requestId);
+
+            if (statement.executeUpdate() == 0) {
+                throw new IllegalArgumentException("Pending stock request not found.");
+            }
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to approve stock request.", e);
+        }
+    }
+
+    public synchronized void postApprovedStockRequest(int requestId, String postedBy) {
+        if (requestId <= 0) {
+            throw new IllegalArgumentException("Select an approved stock request first.");
+        }
+
+        String findSql = "SELECT id, item_id, quantity, status FROM stock_requests WHERE id = ? FOR UPDATE";
+        String updateItemSql = "UPDATE items SET quantity = quantity + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        String postSql = """
+                UPDATE stock_requests
+                SET status = 'POSTED',
+                    posted_by = ?,
+                    posted_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+
+        try (Connection connection = openConnection()) {
+            connection.setAutoCommit(false);
+
+            try (PreparedStatement findStatement = connection.prepareStatement(findSql)) {
+                findStatement.setInt(1, requestId);
+
+                try (ResultSet resultSet = findStatement.executeQuery()) {
+                    if (!resultSet.next()) {
+                        throw new IllegalArgumentException("Stock request not found.");
+                    }
+
+                    String status = resultSet.getString("status");
+                    if (status == null || !status.equalsIgnoreCase("APPROVED")) {
+                        throw new IllegalArgumentException("Only receiver-approved stock requests can be posted.");
+                    }
+
+                    int itemId = resultSet.getInt("item_id");
+                    int quantity = resultSet.getInt("quantity");
+
+                    try (PreparedStatement updateItem = connection.prepareStatement(updateItemSql);
+                         PreparedStatement postRequest = connection.prepareStatement(postSql)) {
+                        updateItem.setInt(1, quantity);
+                        updateItem.setInt(2, itemId);
+                        updateItem.executeUpdate();
+
+                        postRequest.setString(1, postedBy == null || postedBy.isBlank() ? "staff" : postedBy.trim());
+                        postRequest.setInt(2, requestId);
+                        postRequest.executeUpdate();
+                    }
+                }
+
+                connection.commit();
+            } catch (Exception e) {
+                connection.rollback();
+                if (e instanceof IllegalArgumentException illegalArgumentException) {
+                    throw illegalArgumentException;
+                }
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to post approved stock.", e);
+        }
+    }
+
+    private StockRequest readStockRequest(ResultSet resultSet) throws SQLException {
+        return new StockRequest(
+                resultSet.getInt("id"),
+                resultSet.getString("request_code"),
+                resultSet.getString("requested_by"),
+                resultSet.getString("requested_role"),
+                resultSet.getString("item_code"),
+                resultSet.getString("item_name"),
+                resultSet.getString("category"),
+                resultSet.getInt("current_quantity"),
+                resultSet.getInt("quantity"),
+                resultSet.getString("status"),
+                resultSet.getString("requested_at"),
+                resultSet.getString("approved_by"),
+                resultSet.getString("approved_at"),
+                resultSet.getString("posted_by"),
+                resultSet.getString("posted_at")
+        );
+    }
+
     public synchronized void addOrder(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("Order is required.");
@@ -223,7 +399,7 @@ public class DataStorage {
 
     public synchronized List<Order> getOrders() {
         String sql = """
-                SELECT o.order_code, o.customer_name, o.customer_username, i.name AS item_name, o.quantity, o.status, o.order_date, o.paid, o.payment_method, o.courier_name, o.forwarded_at
+                SELECT o.order_code, o.customer_name, o.customer_username, i.name AS item_name, o.quantity, o.status, o.order_date, o.paid, o.payment_method, o.courier_name, o.forwarded_at, o.cancellation_reason, o.cancelled_at
                 FROM orders o
                 JOIN items i ON i.id = o.item_id
                 ORDER BY o.id
@@ -245,7 +421,9 @@ public class DataStorage {
                         resultSet.getString("payment_method"),
                         resultSet.getString("customer_username"),
                         resultSet.getString("courier_name"),
-                        resultSet.getString("forwarded_at")
+                        resultSet.getString("forwarded_at"),
+                        resultSet.getString("cancellation_reason"),
+                        resultSet.getString("cancelled_at")
                 ));
             }
             return orders;
@@ -256,7 +434,7 @@ public class DataStorage {
 
     public synchronized Order findOrderById(String orderId) {
         String sql = """
-                SELECT o.order_code, o.customer_name, o.customer_username, i.name AS item_name, o.quantity, o.status, o.order_date, o.paid, o.payment_method, o.courier_name, o.forwarded_at
+                SELECT o.order_code, o.customer_name, o.customer_username, i.name AS item_name, o.quantity, o.status, o.order_date, o.paid, o.payment_method, o.courier_name, o.forwarded_at, o.cancellation_reason, o.cancelled_at
                 FROM orders o
                 JOIN items i ON i.id = o.item_id
                 WHERE o.order_code = ?
@@ -278,7 +456,9 @@ public class DataStorage {
                         resultSet.getString("payment_method"),
                         resultSet.getString("customer_username"),
                         resultSet.getString("courier_name"),
-                        resultSet.getString("forwarded_at")
+                        resultSet.getString("forwarded_at"),
+                        resultSet.getString("cancellation_reason"),
+                        resultSet.getString("cancelled_at")
                     );
                 }
                 return null;
@@ -332,7 +512,7 @@ public class DataStorage {
 
     public synchronized List<CustomerServiceMessage> getCustomerServiceMessages() {
         String sql = """
-                SELECT id, customer_username, customer_name, subject, order_code, message, created_at
+                SELECT id, customer_username, customer_name, subject, order_code, message, reply, replied_by, replied_at, created_at
                 FROM customer_service_messages
                 ORDER BY created_at DESC, id DESC
                 """;
@@ -349,6 +529,9 @@ public class DataStorage {
                         resultSet.getString("subject"),
                         resultSet.getString("order_code"),
                         resultSet.getString("message"),
+                        resultSet.getString("reply"),
+                        resultSet.getString("replied_by"),
+                        resultSet.getString("replied_at"),
                         resultSet.getString("created_at")
                 ));
             }
@@ -356,6 +539,189 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to load customer service messages.", e);
         }
+    }
+
+    public synchronized List<CustomerServiceMessage> getCustomerServiceMessagesForCustomer(String customerUsername) {
+        String sql = """
+                SELECT id, customer_username, customer_name, subject, order_code, message, reply, replied_by, replied_at, created_at
+                FROM customer_service_messages
+                WHERE customer_username = ?
+                ORDER BY created_at DESC, id DESC
+                """;
+        List<CustomerServiceMessage> messages = new ArrayList<>();
+
+        try (Connection connection = openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, customerUsername);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    messages.add(new CustomerServiceMessage(
+                            resultSet.getInt("id"),
+                            resultSet.getString("customer_username"),
+                            resultSet.getString("customer_name"),
+                            resultSet.getString("subject"),
+                            resultSet.getString("order_code"),
+                            resultSet.getString("message"),
+                            resultSet.getString("reply"),
+                            resultSet.getString("replied_by"),
+                            resultSet.getString("replied_at"),
+                            resultSet.getString("created_at")
+                    ));
+                }
+            }
+            return messages;
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to load customer service replies.", e);
+        }
+    }
+
+    public synchronized void replyToCustomerServiceMessage(int messageId, String reply, String repliedBy) {
+        if (messageId <= 0) {
+            throw new IllegalArgumentException("Select a customer concern first.");
+        }
+        if (reply == null || reply.isBlank()) {
+            throw new IllegalArgumentException("Reply message is required.");
+        }
+
+        String sql = """
+                UPDATE customer_service_messages
+                SET reply = ?, replied_by = ?, replied_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+        try (Connection connection = openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, reply.trim());
+            statement.setString(2, repliedBy == null || repliedBy.isBlank() ? "Staff/Admin" : repliedBy.trim());
+            statement.setInt(3, messageId);
+
+            if (statement.executeUpdate() == 0) {
+                throw new IllegalArgumentException("Customer concern not found.");
+            }
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to save customer service reply.", e);
+        }
+    }
+
+    public synchronized void cancelCustomerOrder(String orderId, String customerUsername, String customerName, String reason) {
+        if (orderId == null || orderId.isBlank()) {
+            throw new IllegalArgumentException("Order ID is required.");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("Cancellation reason is required.");
+        }
+
+        String findOrderSql = """
+                SELECT o.id, o.item_id, o.quantity, o.status, o.customer_name, o.customer_username, i.name AS item_name
+                FROM orders o
+                JOIN items i ON i.id = o.item_id
+                WHERE o.order_code = ?
+                FOR UPDATE
+                """;
+        String restoreStockSql = "UPDATE items SET quantity = quantity + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        String updateOrderSql = """
+                UPDATE orders
+                SET status = 'CANCELLED BY CUSTOMER',
+                    cancellation_reason = ?,
+                    cancelled_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+        String insertNotificationSql = """
+                INSERT INTO customer_service_messages
+                    (customer_username, customer_name, subject, order_code, message)
+                VALUES (?, ?, ?, ?, ?)
+                """;
+
+        try (Connection connection = openConnection()) {
+            connection.setAutoCommit(false);
+
+            try (PreparedStatement findOrder = connection.prepareStatement(findOrderSql)) {
+                findOrder.setString(1, orderId);
+
+                try (ResultSet resultSet = findOrder.executeQuery()) {
+                    if (!resultSet.next()) {
+                        throw new IllegalArgumentException("Order not found.");
+                    }
+
+                    int orderRowId = resultSet.getInt("id");
+                    int itemId = resultSet.getInt("item_id");
+                    int quantity = resultSet.getInt("quantity");
+                    String status = resultSet.getString("status");
+                    String storedCustomerName = resultSet.getString("customer_name");
+                    String storedCustomerUsername = resultSet.getString("customer_username");
+                    String itemName = resultSet.getString("item_name");
+
+                    if (!isCustomerOrderOwner(storedCustomerUsername, storedCustomerName, customerUsername, customerName)) {
+                        throw new IllegalArgumentException("You can only cancel your own orders.");
+                    }
+
+                    String upperStatus = status == null ? "" : status.toUpperCase();
+                    if (upperStatus.contains("CANCELLED")) {
+                        throw new IllegalArgumentException("This order is already cancelled.");
+                    }
+                    if (upperStatus.contains("DELIVERED")) {
+                        throw new IllegalArgumentException("Delivered orders cannot be cancelled from the profile.");
+                    }
+
+                    boolean preOrder = upperStatus.contains("PRE-ORDER");
+                    try (PreparedStatement restoreStock = connection.prepareStatement(restoreStockSql);
+                         PreparedStatement updateOrder = connection.prepareStatement(updateOrderSql);
+                         PreparedStatement insertNotification = connection.prepareStatement(insertNotificationSql)) {
+                        if (!preOrder) {
+                            restoreStock.setInt(1, quantity);
+                            restoreStock.setInt(2, itemId);
+                            restoreStock.executeUpdate();
+                        }
+
+                        updateOrder.setString(1, reason.trim());
+                        updateOrder.setInt(2, orderRowId);
+                        updateOrder.executeUpdate();
+
+                        String notificationCustomerName = storedCustomerName == null || storedCustomerName.isBlank()
+                                ? customerName
+                                : storedCustomerName;
+                        String notificationUsername = storedCustomerUsername == null || storedCustomerUsername.isBlank()
+                                ? customerUsername
+                                : storedCustomerUsername;
+                        String message = "Customer cancelled this order from the profile.\n"
+                                + "Item: " + itemName + "\n"
+                                + "Quantity: " + quantity + "\n"
+                                + "Previous Status: " + status + "\n"
+                                + "Reason: " + reason.trim();
+
+                        insertNotification.setString(1, notificationUsername == null ? "" : notificationUsername);
+                        insertNotification.setString(2, notificationCustomerName == null ? "" : notificationCustomerName);
+                        insertNotification.setString(3, "Order Cancellation");
+                        insertNotification.setString(4, orderId);
+                        insertNotification.setString(5, message);
+                        insertNotification.executeUpdate();
+                    }
+
+                    connection.commit();
+                }
+            } catch (Exception e) {
+                connection.rollback();
+                if (e instanceof IllegalArgumentException illegalArgumentException) {
+                    throw illegalArgumentException;
+                }
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw mapDatabaseError("Failed to cancel customer order.", e);
+        }
+    }
+
+    private boolean isCustomerOrderOwner(String storedUsername, String storedName, String currentUsername, String currentName) {
+        if (storedUsername != null && !storedUsername.isBlank()) {
+            return currentUsername != null && storedUsername.equalsIgnoreCase(currentUsername);
+        }
+        if (storedName == null || storedName.isBlank()) {
+            return false;
+        }
+        return (currentName != null && storedName.equalsIgnoreCase(currentName))
+                || (currentUsername != null && storedName.equalsIgnoreCase(currentUsername));
     }
 
     public synchronized void assignCourier(String orderId, String courierName) {
@@ -396,11 +762,13 @@ public class DataStorage {
                     int itemId = resultSet.getInt("item_id");
                     int quantity = resultSet.getInt("quantity");
                     String status = resultSet.getString("status");
-                    boolean preOrder = status != null && status.toUpperCase().contains("PRE-ORDER");
+                    String upperStatus = status == null ? "" : status.toUpperCase();
+                    boolean preOrder = upperStatus.contains("PRE-ORDER");
+                    boolean alreadyCancelled = upperStatus.contains("CANCELLED");
 
                     try (PreparedStatement restoreStock = connection.prepareStatement(restoreStockSql);
                          PreparedStatement deleteOrder = connection.prepareStatement(deleteOrderSql)) {
-                        if (!preOrder) {
+                        if (!preOrder && !alreadyCancelled) {
                             restoreStock.setInt(1, quantity);
                             restoreStock.setInt(2, itemId);
                             restoreStock.executeUpdate();
@@ -593,6 +961,7 @@ public class DataStorage {
         try (Connection connection = openConnection()) {
             ensureUsersTable(connection);
             ensureItemsTable(connection);
+            ensureStockRequestsTable(connection);
             ensureOrdersTable(connection);
             ensureCustomerServiceTable(connection);
             ensureDefaultUsers(connection);
@@ -659,6 +1028,46 @@ public class DataStorage {
                 "ALTER TABLE items ADD COLUMN image_path VARCHAR(255) NULL");
     }
 
+    private void ensureStockRequestsTable(Connection connection) throws SQLException {
+        executeStatement(connection, """
+                CREATE TABLE IF NOT EXISTS stock_requests (
+                    id INT NOT NULL AUTO_INCREMENT,
+                    request_code VARCHAR(50) NOT NULL,
+                    requested_by VARCHAR(45) NOT NULL,
+                    requested_role VARCHAR(20) NOT NULL,
+                    item_id INT NOT NULL,
+                    quantity INT NOT NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                    requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    approved_by VARCHAR(45) NULL,
+                    approved_at TIMESTAMP NULL,
+                    posted_by VARCHAR(45) NULL,
+                    posted_at TIMESTAMP NULL,
+                    PRIMARY KEY (id),
+                    UNIQUE KEY uq_stock_requests_request_code (request_code),
+                    CONSTRAINT fk_stock_requests_item FOREIGN KEY (item_id) REFERENCES items (id)
+                )
+                """);
+        ensureColumn(connection, "stock_requests", "requested_by",
+                "ALTER TABLE stock_requests ADD COLUMN requested_by VARCHAR(45) NOT NULL DEFAULT ''");
+        ensureColumn(connection, "stock_requests", "requested_role",
+                "ALTER TABLE stock_requests ADD COLUMN requested_role VARCHAR(20) NOT NULL DEFAULT 'STAFF'");
+        ensureColumn(connection, "stock_requests", "status",
+                "ALTER TABLE stock_requests ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PENDING'");
+        ensureColumn(connection, "stock_requests", "requested_at",
+                "ALTER TABLE stock_requests ADD COLUMN requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+        ensureColumn(connection, "stock_requests", "approved_by",
+                "ALTER TABLE stock_requests ADD COLUMN approved_by VARCHAR(45) NULL");
+        ensureColumn(connection, "stock_requests", "approved_at",
+                "ALTER TABLE stock_requests ADD COLUMN approved_at TIMESTAMP NULL");
+        ensureColumn(connection, "stock_requests", "posted_by",
+                "ALTER TABLE stock_requests ADD COLUMN posted_by VARCHAR(45) NULL");
+        ensureColumn(connection, "stock_requests", "posted_at",
+                "ALTER TABLE stock_requests ADD COLUMN posted_at TIMESTAMP NULL");
+        ensureUniqueIndex(connection, "stock_requests", "uq_stock_requests_request_code",
+                "CREATE UNIQUE INDEX uq_stock_requests_request_code ON stock_requests (request_code)");
+    }
+
     private void ensureOrdersTable(Connection connection) throws SQLException {
         executeStatement(connection, """
                 CREATE TABLE IF NOT EXISTS orders (
@@ -674,6 +1083,8 @@ public class DataStorage {
                     payment_method VARCHAR(20) NULL,
                     courier_name VARCHAR(40) NULL,
                     forwarded_at TIMESTAMP NULL,
+                    cancellation_reason TEXT NULL,
+                    cancelled_at TIMESTAMP NULL,
                     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (id),
                     UNIQUE KEY uq_orders_order_code (order_code),
@@ -690,6 +1101,10 @@ public class DataStorage {
                 "ALTER TABLE orders ADD COLUMN courier_name VARCHAR(40) NULL");
         ensureColumn(connection, "orders", "forwarded_at",
                 "ALTER TABLE orders ADD COLUMN forwarded_at TIMESTAMP NULL");
+        ensureColumn(connection, "orders", "cancellation_reason",
+                "ALTER TABLE orders ADD COLUMN cancellation_reason TEXT NULL");
+        ensureColumn(connection, "orders", "cancelled_at",
+                "ALTER TABLE orders ADD COLUMN cancelled_at TIMESTAMP NULL");
     }
 
     private void ensureCustomerServiceTable(Connection connection) throws SQLException {
@@ -701,10 +1116,19 @@ public class DataStorage {
                     subject VARCHAR(80) NOT NULL,
                     order_code VARCHAR(50) NULL,
                     message TEXT NOT NULL,
+                    reply TEXT NULL,
+                    replied_by VARCHAR(100) NULL,
+                    replied_at TIMESTAMP NULL,
                     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (id)
                 )
                 """);
+        ensureColumn(connection, "customer_service_messages", "reply",
+                "ALTER TABLE customer_service_messages ADD COLUMN reply TEXT NULL");
+        ensureColumn(connection, "customer_service_messages", "replied_by",
+                "ALTER TABLE customer_service_messages ADD COLUMN replied_by VARCHAR(100) NULL");
+        ensureColumn(connection, "customer_service_messages", "replied_at",
+                "ALTER TABLE customer_service_messages ADD COLUMN replied_at TIMESTAMP NULL");
     }
 
     private void ensureDefaultInventoryItems(Connection connection) throws SQLException {
@@ -939,6 +1363,62 @@ public class DataStorage {
         }
     }
 
+    public static class StockRequest {
+        public int id;
+        public String requestCode;
+        public String requestedBy;
+        public String requestedRole;
+        public String itemCode;
+        public String itemName;
+        public String category;
+        public int currentQuantity;
+        public int quantity;
+        public String status;
+        public String requestedAt;
+        public String approvedBy;
+        public String approvedAt;
+        public String postedBy;
+        public String postedAt;
+
+        public StockRequest(String requestCode, String requestedBy, String requestedRole, String itemCode, int quantity) {
+            this(0, requestCode, requestedBy, requestedRole, itemCode, "", "", 0, quantity, "PENDING", "", "", "", "", "");
+        }
+
+        public StockRequest(
+                int id,
+                String requestCode,
+                String requestedBy,
+                String requestedRole,
+                String itemCode,
+                String itemName,
+                String category,
+                int currentQuantity,
+                int quantity,
+                String status,
+                String requestedAt,
+                String approvedBy,
+                String approvedAt,
+                String postedBy,
+                String postedAt
+        ) {
+            this.id = id;
+            this.requestCode = requestCode == null ? "" : requestCode;
+            this.requestedBy = requestedBy == null ? "" : requestedBy;
+            this.requestedRole = requestedRole == null ? "" : requestedRole;
+            this.itemCode = itemCode == null ? "" : itemCode;
+            this.itemName = itemName == null ? "" : itemName;
+            this.category = category == null ? "" : category;
+            this.currentQuantity = currentQuantity;
+            this.quantity = quantity;
+            this.status = status == null ? "" : status;
+            this.requestedAt = requestedAt == null ? "" : requestedAt;
+            this.approvedBy = approvedBy == null ? "" : approvedBy;
+            this.approvedAt = approvedAt == null ? "" : approvedAt;
+            this.postedBy = postedBy == null ? "" : postedBy;
+            this.postedAt = postedAt == null ? "" : postedAt;
+        }
+    }
+
     public static class Order {
         public String id;
         public String customer;
@@ -951,6 +1431,8 @@ public class DataStorage {
         public String customerUsername;
         public String courierName;
         public String forwardedAt;
+        public String cancellationReason;
+        public String cancelledAt;
 
         public Order(String id, String customer, String itemName, int quantity, String status, String date) {
             this(id, customer, itemName, quantity, status, date, false, "");
@@ -969,6 +1451,10 @@ public class DataStorage {
         }
 
         public Order(String id, String customer, String itemName, int quantity, String status, String date, boolean paid, String paymentMethod, String customerUsername, String courierName, String forwardedAt) {
+            this(id, customer, itemName, quantity, status, date, paid, paymentMethod, customerUsername, courierName, forwardedAt, "", "");
+        }
+
+        public Order(String id, String customer, String itemName, int quantity, String status, String date, boolean paid, String paymentMethod, String customerUsername, String courierName, String forwardedAt, String cancellationReason, String cancelledAt) {
             this.id = id;
             this.customer = customer;
             this.itemName = itemName;
@@ -980,6 +1466,8 @@ public class DataStorage {
             this.customerUsername = customerUsername == null ? "" : customerUsername;
             this.courierName = courierName == null ? "" : courierName;
             this.forwardedAt = forwardedAt == null ? "" : forwardedAt;
+            this.cancellationReason = cancellationReason == null ? "" : cancellationReason;
+            this.cancelledAt = cancelledAt == null ? "" : cancelledAt;
         }
     }
 
@@ -990,6 +1478,9 @@ public class DataStorage {
         public String subject;
         public String orderCode;
         public String message;
+        public String reply;
+        public String repliedBy;
+        public String repliedAt;
         public String createdAt;
 
         public CustomerServiceMessage(String customerUsername, String customerName, String subject, String orderCode, String message) {
@@ -997,12 +1488,19 @@ public class DataStorage {
         }
 
         public CustomerServiceMessage(int id, String customerUsername, String customerName, String subject, String orderCode, String message, String createdAt) {
+            this(id, customerUsername, customerName, subject, orderCode, message, "", "", "", createdAt);
+        }
+
+        public CustomerServiceMessage(int id, String customerUsername, String customerName, String subject, String orderCode, String message, String reply, String repliedBy, String repliedAt, String createdAt) {
             this.id = id;
             this.customerUsername = customerUsername == null ? "" : customerUsername;
             this.customerName = customerName == null ? "" : customerName;
             this.subject = subject == null ? "" : subject;
             this.orderCode = orderCode == null ? "" : orderCode;
             this.message = message == null ? "" : message;
+            this.reply = reply == null ? "" : reply;
+            this.repliedBy = repliedBy == null ? "" : repliedBy;
+            this.repliedAt = repliedAt == null ? "" : repliedAt;
             this.createdAt = createdAt == null ? "" : createdAt;
         }
     }

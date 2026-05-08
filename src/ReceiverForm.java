@@ -2,13 +2,16 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReceiverForm {
     private static final String QUEUE_VIEW = "queue";
     private static final String HISTORY_VIEW = "history";
+    private static final String STOCK_APPROVAL_VIEW = "stockApproval";
     private static final String[] COURIERS = {"DHL", "FedEx", "LBC", "J&T", "ZendEase"};
 
+    private final DataStorage.User currentUser;
     private final JPanel mainPanel;
     private final CardLayout viewLayout;
     private final JPanel viewPanel;
@@ -21,8 +24,16 @@ public class ReceiverForm {
     private final JLabel statusLabel = new JLabel(" ");
     private final JTable historyTable = new JTable();
     private final JComboBox<String> historyCourierBox = new JComboBox<>(COURIERS);
+    private final JTable stockApprovalTable = new JTable();
+    private final JTextArea stockApprovalDetailsArea = new JTextArea();
+    private final List<DataStorage.StockRequest> pendingStockRequests = new ArrayList<>();
 
     public ReceiverForm() {
+        this(new DataStorage.User("receiver", "", UserRole.RECEIVER));
+    }
+
+    public ReceiverForm(DataStorage.User currentUser) {
+        this.currentUser = currentUser == null ? new DataStorage.User("receiver", "", UserRole.RECEIVER) : currentUser;
         mainPanel = new JPanel(new BorderLayout(0, 16));
         mainPanel.setBackground(ModuleTheme.PAGE_BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -46,6 +57,7 @@ public class ReceiverForm {
         viewPanel.setOpaque(false);
         viewPanel.add(buildQueueView(), QUEUE_VIEW);
         viewPanel.add(buildHistoryView(), HISTORY_VIEW);
+        viewPanel.add(buildStockApprovalView(), STOCK_APPROVAL_VIEW);
 
         JPanel footer = new JPanel(new BorderLayout());
         footer.setOpaque(false);
@@ -66,15 +78,19 @@ public class ReceiverForm {
         topActions.setOpaque(false);
         JButton queueButton = new JButton("Order Queue");
         JButton historyButton = new JButton("History");
+        JButton stockApprovalButton = new JButton("Stock Approvals");
         JButton refreshButton = new JButton("Refresh");
         ModulePanelFactory.styleActionButton(queueButton, new Color(25, 118, 210));
         ModulePanelFactory.styleActionButton(historyButton, new Color(67, 56, 202));
+        ModulePanelFactory.styleActionButton(stockApprovalButton, new Color(0, 150, 136));
         ModulePanelFactory.styleActionButton(refreshButton, new Color(92, 107, 128));
         queueButton.addActionListener(e -> showQueueView());
         historyButton.addActionListener(e -> showHistoryView());
+        stockApprovalButton.addActionListener(e -> showStockApprovalsView());
         refreshButton.addActionListener(e -> loadQueueOrders());
         topActions.add(queueButton);
         topActions.add(historyButton);
+        topActions.add(stockApprovalButton);
         topActions.add(refreshButton);
         root.add(topActions, BorderLayout.NORTH);
 
@@ -149,18 +165,22 @@ public class ReceiverForm {
         topActions.setOpaque(false);
         JButton queueButton = new JButton("Order Queue");
         JButton historyButton = new JButton("History");
+        JButton stockApprovalButton = new JButton("Stock Approvals");
         JButton refreshButton = new JButton("Refresh");
         JButton updateCourierButton = new JButton("Update Courier");
         ModulePanelFactory.styleActionButton(queueButton, new Color(25, 118, 210));
         ModulePanelFactory.styleActionButton(historyButton, new Color(67, 56, 202));
+        ModulePanelFactory.styleActionButton(stockApprovalButton, new Color(0, 150, 136));
         ModulePanelFactory.styleActionButton(refreshButton, new Color(92, 107, 128));
         ModulePanelFactory.styleActionButton(updateCourierButton, new Color(0, 150, 136));
         queueButton.addActionListener(e -> showQueueView());
         historyButton.addActionListener(e -> showHistoryView());
+        stockApprovalButton.addActionListener(e -> showStockApprovalsView());
         refreshButton.addActionListener(e -> loadHistory());
         updateCourierButton.addActionListener(e -> updateCourierFromHistory());
         topActions.add(queueButton);
         topActions.add(historyButton);
+        topActions.add(stockApprovalButton);
         topActions.add(refreshButton);
         topActions.add(new JLabel("Set Courier"));
         topActions.add(historyCourierBox);
@@ -180,10 +200,81 @@ public class ReceiverForm {
         return panel;
     }
 
+    private JPanel buildStockApprovalView() {
+        JPanel panel = ModuleTheme.createSurfacePanel();
+        panel.setLayout(new BorderLayout(0, 12));
+
+        JPanel topActions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        topActions.setOpaque(false);
+        JButton queueButton = new JButton("Order Queue");
+        JButton historyButton = new JButton("History");
+        JButton stockApprovalButton = new JButton("Stock Approvals");
+        JButton refreshButton = new JButton("Refresh");
+        ModulePanelFactory.styleActionButton(queueButton, new Color(25, 118, 210));
+        ModulePanelFactory.styleActionButton(historyButton, new Color(67, 56, 202));
+        ModulePanelFactory.styleActionButton(stockApprovalButton, new Color(0, 150, 136));
+        ModulePanelFactory.styleActionButton(refreshButton, new Color(92, 107, 128));
+        queueButton.addActionListener(e -> showQueueView());
+        historyButton.addActionListener(e -> showHistoryView());
+        stockApprovalButton.addActionListener(e -> showStockApprovalsView());
+        refreshButton.addActionListener(e -> loadStockApprovals());
+        topActions.add(queueButton);
+        topActions.add(historyButton);
+        topActions.add(stockApprovalButton);
+        topActions.add(refreshButton);
+
+        stockApprovalTable.setRowHeight(28);
+        stockApprovalTable.setFillsViewportHeight(true);
+        stockApprovalTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        stockApprovalTable.getSelectionModel().addListSelectionListener(event -> showSelectedStockRequest());
+        stockApprovalTable.setModel(new DefaultTableModel(new Object[][]{}, new Object[]{"ID", "Request", "Item", "Qty", "Requested By", "Role", "Requested At"}) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        });
+
+        stockApprovalDetailsArea.setEditable(false);
+        stockApprovalDetailsArea.setLineWrap(true);
+        stockApprovalDetailsArea.setWrapStyleWord(true);
+        ModuleTheme.styleTextArea(stockApprovalDetailsArea);
+
+        JPanel detailsPanel = new JPanel(new BorderLayout(0, 8));
+        detailsPanel.setOpaque(false);
+        JLabel detailsTitle = new JLabel("Approval Details");
+        detailsTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        detailsTitle.setForeground(Color.WHITE);
+        detailsPanel.add(detailsTitle, BorderLayout.NORTH);
+        detailsPanel.add(new JScrollPane(stockApprovalDetailsArea), BorderLayout.CENTER);
+        detailsPanel.setPreferredSize(new Dimension(360, 0));
+
+        JPanel content = new JPanel(new BorderLayout(12, 0));
+        content.setOpaque(false);
+        content.add(new JScrollPane(stockApprovalTable), BorderLayout.CENTER);
+        content.add(detailsPanel, BorderLayout.EAST);
+
+        JButton approveButton = new JButton("Approve Stock");
+        ModulePanelFactory.styleActionButton(approveButton, new Color(0, 150, 136));
+        approveButton.addActionListener(e -> approveSelectedStockRequest());
+
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        bottom.setOpaque(false);
+        bottom.add(approveButton);
+
+        panel.add(topActions, BorderLayout.NORTH);
+        panel.add(content, BorderLayout.CENTER);
+        panel.add(bottom, BorderLayout.SOUTH);
+        return panel;
+    }
+
     private void loadQueueOrders() {
         queueListModel.clear();
         List<DataStorage.Order> orders = DataStorage.getInstance().getOrders();
         for (DataStorage.Order order : orders) {
+            String status = order.status == null ? "" : order.status.toUpperCase();
+            if (status.contains("CANCELLED")) {
+                continue;
+            }
             if (order.courierName == null || order.courierName.isBlank()) {
                 queueListModel.addElement(order);
             }
@@ -263,6 +354,94 @@ public class ReceiverForm {
         historyTable.setModel(model);
     }
 
+    private void loadStockApprovals() {
+        pendingStockRequests.clear();
+        pendingStockRequests.addAll(DataStorage.getInstance().getStockRequestsByStatus("PENDING"));
+
+        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Request", "Item", "Qty", "Requested By", "Role", "Requested At"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        for (DataStorage.StockRequest request : pendingStockRequests) {
+            model.addRow(new Object[]{
+                    request.id,
+                    request.requestCode,
+                    request.itemCode + " - " + request.itemName,
+                    request.quantity,
+                    request.requestedBy,
+                    request.requestedRole,
+                    request.requestedAt == null || request.requestedAt.isBlank() ? "-" : request.requestedAt
+            });
+        }
+        stockApprovalTable.setModel(model);
+        if (model.getRowCount() > 0) {
+            stockApprovalTable.setRowSelectionInterval(0, 0);
+        } else {
+            stockApprovalDetailsArea.setText("No pending stock requests from admin or staff.");
+        }
+        showStatus("Loaded " + model.getRowCount() + " pending stock request(s).", new Color(46, 125, 50));
+    }
+
+    private void showSelectedStockRequest() {
+        int row = stockApprovalTable.getSelectedRow();
+        if (row < 0) {
+            stockApprovalDetailsArea.setText("");
+            return;
+        }
+        int requestId = Integer.parseInt(String.valueOf(stockApprovalTable.getValueAt(row, 0)));
+        DataStorage.StockRequest request = findPendingStockRequest(requestId);
+        if (request == null) {
+            stockApprovalDetailsArea.setText("");
+            return;
+        }
+        stockApprovalDetailsArea.setText(
+                "Request ID: " + request.requestCode + "\n" +
+                "Item ID: " + request.itemCode + "\n" +
+                "Item Name: " + request.itemName + "\n" +
+                "Category: " + request.category + "\n" +
+                "Current Inventory Stock: " + request.currentQuantity + "\n" +
+                "Requested Quantity: " + request.quantity + "\n" +
+                "Requested By: " + request.requestedBy + " (" + request.requestedRole + ")\n" +
+                "Requested At: " + (request.requestedAt == null || request.requestedAt.isBlank() ? "-" : request.requestedAt) + "\n\n" +
+                "Approving this request will make it available in the staff Stock-In item selector."
+        );
+    }
+
+    private DataStorage.StockRequest findPendingStockRequest(int requestId) {
+        for (DataStorage.StockRequest request : pendingStockRequests) {
+            if (request.id == requestId) {
+                return request;
+            }
+        }
+        return null;
+    }
+
+    private void approveSelectedStockRequest() {
+        int row = stockApprovalTable.getSelectedRow();
+        if (row < 0) {
+            showStatus("Select a stock request first.", new Color(211, 47, 47));
+            return;
+        }
+        int requestId = Integer.parseInt(String.valueOf(stockApprovalTable.getValueAt(row, 0)));
+        DataStorage.StockRequest request = findPendingStockRequest(requestId);
+        if (request == null) {
+            showStatus("Selected stock request is no longer pending.", new Color(211, 47, 47));
+            loadStockApprovals();
+            return;
+        }
+
+        try {
+            String approvedBy = currentUser.username == null || currentUser.username.isBlank() ? "receiver" : currentUser.username;
+            DataStorage.getInstance().approveStockRequest(requestId, approvedBy);
+            loadStockApprovals();
+            showStatus("Stock request " + request.requestCode + " approved for staff posting.", new Color(46, 125, 50));
+        } catch (Exception ex) {
+            showStatus(ex.getMessage(), new Color(211, 47, 47));
+        }
+    }
+
     private void updateCourierFromHistory() {
         int row = historyTable.getSelectedRow();
         if (row < 0) {
@@ -293,6 +472,11 @@ public class ReceiverForm {
         loadHistory();
         viewLayout.show(viewPanel, HISTORY_VIEW);
         showStatus("Showing receiver history.", new Color(46, 125, 50));
+    }
+
+    public void showStockApprovalsView() {
+        loadStockApprovals();
+        viewLayout.show(viewPanel, STOCK_APPROVAL_VIEW);
     }
 
     private void showStatus(String message, Color color) {

@@ -4,10 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="206d38d3-0727-4ee1-84a5-c25b0ae99a88" name="Changes" comment="amir edit">
+    <list default="true" id="206d38d3-0727-4ee1-84a5-c25b0ae99a88" name="Changes" comment="azkia edit1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/login_1_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/database/login_1_schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CustomerMainMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CustomerMainMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CustomerServiceForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CustomerServiceForm.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/DataStorage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStorage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/InventoryForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/InventoryForm.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MainMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MainMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/OrderForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/OrderForm.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ReceiverForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ReceiverForm.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,7 +21,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="66" />
+    <option name="cachedIndexableFilesCount" value="75" />
+  </component>
+  <component name="ExportToHTMLSettings">
+    <option name="printScope" value="1" />
+    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../PAGLINAWAN4" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -105,7 +115,9 @@
       <workItem from="1778052767462" duration="23032000" />
       <workItem from="1778084945094" duration="4863000" />
       <workItem from="1778090285130" duration="3594000" />
-      <workItem from="1778128299114" duration="1797000" />
+      <workItem from="1778128299114" duration="13316000" />
+      <workItem from="1778219058572" duration="6321000" />
+      <workItem from="1778227680277" duration="2000000" />
     </task>
     <task id="LOCAL-00001" summary="amir edit">
       <option name="closed" value="true" />
@@ -147,7 +159,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778129061357</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="azkia edit1">
+      <option name="closed" value="true" />
+      <created>1778130330039</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1778130330039</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -166,7 +186,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="amir edit" />
-    <option name="LAST_COMMIT_MESSAGE" value="amir edit" />
+    <MESSAGE value="azkia edit1" />
+    <option name="LAST_COMMIT_MESSAGE" value="azkia edit1" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
