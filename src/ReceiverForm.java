@@ -27,6 +27,7 @@ public class ReceiverForm {
     private final JTable stockApprovalTable = new JTable();
     private final JTextArea stockApprovalDetailsArea = new JTextArea();
     private final List<DataStorage.StockRequest> pendingStockRequests = new ArrayList<>();
+    private String activeView = QUEUE_VIEW;
 
     public ReceiverForm() {
         this(new DataStorage.User("receiver", "", UserRole.RECEIVER));
@@ -68,6 +69,7 @@ public class ReceiverForm {
         mainPanel.add(footer, BorderLayout.SOUTH);
 
         showQueueView();
+        DataStorage.getInstance().addInventoryChangeListener(this::handleInventoryDataChanged);
     }
 
     private JPanel buildQueueView() {
@@ -465,18 +467,29 @@ public class ReceiverForm {
 
     public void showQueueView() {
         loadQueueOrders();
+        activeView = QUEUE_VIEW;
         viewLayout.show(viewPanel, QUEUE_VIEW);
     }
 
     public void showHistoryView() {
         loadHistory();
+        activeView = HISTORY_VIEW;
         viewLayout.show(viewPanel, HISTORY_VIEW);
         showStatus("Showing receiver history.", new Color(46, 125, 50));
     }
 
     public void showStockApprovalsView() {
         loadStockApprovals();
+        activeView = STOCK_APPROVAL_VIEW;
         viewLayout.show(viewPanel, STOCK_APPROVAL_VIEW);
+    }
+
+    private void handleInventoryDataChanged() {
+        SwingUtilities.invokeLater(() -> {
+            if (STOCK_APPROVAL_VIEW.equals(activeView)) {
+                loadStockApprovals();
+            }
+        });
     }
 
     private void showStatus(String message, Color color) {

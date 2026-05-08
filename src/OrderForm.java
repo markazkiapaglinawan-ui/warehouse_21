@@ -7,8 +7,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class OrderForm {
     private static final String OVERVIEW_CARD = "overview";
@@ -18,6 +22,8 @@ public class OrderForm {
     private static final String CANCEL_CARD = "cancel";
     private static final String STOCK_CARD = "stock";
     private static final int QR_DISPLAY_SIZE = 340;
+    private static final int LOW_STOCK_THRESHOLD = 9;
+    private static final Color LOW_STOCK_COLOR = new Color(211, 47, 47);
 
     private final DataStorage.User currentUser;
     private final UserRole userRole;
@@ -46,6 +52,11 @@ public class OrderForm {
     private JTextArea cancelPreviewArea;
 
     private JComboBox<String> stockItemBox;
+    private final DefaultListModel<String> stockItemListModel = new DefaultListModel<>();
+    private final Map<String, Integer> stockQuantityByItemCode = new HashMap<>();
+    private final Set<String> receiverApprovedStockItemCodes = new HashSet<>();
+    private JList<String> stockItemList;
+    private JLabel stockAlertLabel;
     private JSpinner stockQuantitySpinner;
     private JTextArea stockPreviewArea;
 
@@ -65,6 +76,7 @@ public class OrderForm {
         } else {
             configureBoundUi();
         }
+        DataStorage.getInstance().addInventoryChangeListener(this::handleInventoryDataChanged);
         showOverview();
     }
 
@@ -298,24 +310,54 @@ public class OrderForm {
 
         stockItemBox = new JComboBox<>();
         stockItemBox.setEditable(false);
+        stockItemBox.setRenderer(createStockItemRenderer());
         stockItemBox.addActionListener(event -> updateStockPreview());
+        stockItemList = new JList<>(stockItemListModel);
+        stockItemList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        stockItemList.setVisibleRowCount(8);
+        stockItemList.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        stockItemList.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225)));
+        stockItemList.setCellRenderer(createStockItemRenderer());
+        stockAlertLabel = new JLabel(" ");
+        stockAlertLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        stockAlertLabel.setForeground(LOW_STOCK_COLOR);
         stockQuantitySpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100000, 1));
         stockQuantitySpinner.addChangeListener(event -> updateStockPreview());
         stockPreviewArea = createTextArea();
         stockPreviewArea.setEditable(false);
 
+        JButton selectItemButton = createSecondaryButton("Select Item");
+        selectItemButton.addActionListener(event -> selectStockItemFromList());
         JButton submitButton = createActionButton("Submit Stock Request");
         submitButton.addActionListener(event -> handleAddStocks());
 
         JPanel body = new JPanel(new BorderLayout(0, 12));
         body.setOpaque(false);
-        body.add(createFormStack(
-                "Item to Restock", stockItemBox,
+
+        JPanel itemListPanel = new JPanel(new BorderLayout(0, 8));
+        itemListPanel.setOpaque(false);
+        itemListPanel.add(ModuleTheme.createFieldLabel("Items from Inventory Add Item"), BorderLayout.NORTH);
+        itemListPanel.add(new JScrollPane(stockItemList), BorderLayout.CENTER);
+        itemListPanel.add(createButtonRow(selectItemButton), BorderLayout.SOUTH);
+
+        JPanel leftPanel = new JPanel(new BorderLayout(0, 12));
+        leftPanel.setOpaque(false);
+        leftPanel.setPreferredSize(new Dimension(420, 0));
+        leftPanel.add(createFormStack(
+                "Selected Item", stockItemBox,
                 "Quantity to Add", stockQuantitySpinner
         ), BorderLayout.NORTH);
+        leftPanel.add(itemListPanel, BorderLayout.CENTER);
+
+        body.add(leftPanel, BorderLayout.WEST);
         body.add(new JScrollPane(stockPreviewArea), BorderLayout.CENTER);
 
-        panel.add(createSectionTitle("Add Stocks"), BorderLayout.NORTH);
+        JPanel headerPanel = new JPanel(new BorderLayout(0, 6));
+        headerPanel.setOpaque(false);
+        headerPanel.add(createSectionTitle("Add Stocks"), BorderLayout.NORTH);
+        headerPanel.add(stockAlertLabel, BorderLayout.CENTER);
+
+        panel.add(headerPanel, BorderLayout.NORTH);
         panel.add(body, BorderLayout.CENTER);
         panel.add(createButtonRow(submitButton), BorderLayout.SOUTH);
         return panel;
@@ -418,6 +460,32 @@ public class OrderForm {
         JButton button = new JButton(text);
         ModulePanelFactory.styleActionButton(button, new Color(211, 47, 47));
         return button;
+    }
+
+    private ListCellRenderer<? super String> createStockItemRenderer() {
+        return (list, value, index, isSelected, cellHasFocus) -> {
+            JLabel label = (JLabel) new DefaultListCellRenderer()
+                    .getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (isPriorityLowStockDisplay(value)) {
+                label.setForeground(LOW_STOCK_COLOR);
+                label.setFont(label.getFont().deriveFont(Font.BOLD));
+            } else {
+                label.setFont(label.getFont().deriveFont(Font.PLAIN));
+            }
+            return label;
+        };
+    }
+
+    private void handleInventoryDataChanged() {
+        SwingUtilities.invokeLater(() -> {
+            if (stockItemBox == null) {
+                return;
+            }
+            String selectedItemCode = selectedStockItemCode((String) stockItemBox.getSelectedItem());
+            reloadStockItemOptions();
+            selectStockItemByCode(selectedItemCode);
+            updateStockPreview();
+        });
     }
 
     private void showOverview() {
@@ -548,6 +616,18 @@ public class OrderForm {
         } catch (Exception ex) {
             showError(ex.getMessage());
         }
+    }
+
+    private void selectStockItemFromList() {
+        if (stockItemList == null || stockItemList.isSelectionEmpty()) {
+            showError("Select an inventory item from the list first.");
+            return;
+        }
+
+        String selectedItem = stockItemList.getSelectedValue();
+        stockItemBox.setSelectedItem(selectedItem);
+        updateStockPreview();
+        showSuccess("Selected " + selectedStockItemCode(selectedItem) + " for restocking.");
     }
 
     private String showPaymentDialog(String orderId, String customer, String itemName, int quantity, double totalPrice) {
@@ -877,12 +957,31 @@ public class OrderForm {
 
     private void reloadStockItemOptions() {
         stockItemBox.removeAllItems();
+        stockItemListModel.clear();
+        stockQuantityByItemCode.clear();
+        receiverApprovedStockItemCodes.clear();
+        for (DataStorage.StockRequest request : DataStorage.getInstance().getStockRequestsByStatus("APPROVED")) {
+            if (request.itemCode != null && !request.itemCode.isBlank()) {
+                receiverApprovedStockItemCodes.add(request.itemCode);
+            }
+        }
+        List<String> lowStockItems = new ArrayList<>();
         for (DataStorage.Item item : DataStorage.getInstance().getItems()) {
-            stockItemBox.addItem(stockItemDisplay(item));
+            String display = stockItemDisplay(item);
+            stockItemBox.addItem(display);
+            stockItemListModel.addElement(display);
+            stockQuantityByItemCode.put(item.id, item.quantity);
+            if (isPriorityLowStock(item.id, item.quantity)) {
+                lowStockItems.add(item.name + " (" + item.quantity + " left)");
+            }
         }
         if (stockItemBox.getItemCount() > 0) {
             stockItemBox.setSelectedIndex(0);
         }
+        if (!stockItemListModel.isEmpty() && stockItemList != null) {
+            stockItemList.setSelectedIndex(0);
+        }
+        updateStockAlert(lowStockItems, receiverApprovedStockItemCodes.size());
     }
 
     private void updateStockPreview() {
@@ -897,6 +996,11 @@ public class OrderForm {
             return;
         }
         int quantityToAdd = stockQuantitySpinner == null ? 0 : (Integer) stockQuantitySpinner.getValue();
+        String alert = isPriorityLowStock(item.id, item.quantity)
+                ? "\n\nPRIORITY ALERT: Only " + item.quantity + " item(s) left in stock. Prioritize adding stock."
+                : receiverApprovedStockItemCodes.contains(item.id)
+                ? "\n\nReceiver-approved stock is waiting for staff posting. The priority alert will return to normal after posting updates inventory."
+                : "";
         stockPreviewArea.setText(
                 "Item ID: " + item.id + "\n" +
                 "Name: " + item.name + "\n" +
@@ -904,12 +1008,14 @@ public class OrderForm {
                 "Current Stock: " + item.quantity + "\n" +
                 "Quantity to Add: " + quantityToAdd + "\n" +
                 "Stock After Posting: " + (item.quantity + quantityToAdd) + "\n\n" +
-                "This request will be sent to the receiver. Inventory stock will not increase until the receiver approves it and staff posts the approved stock."
+                "This request will be sent to the receiver. Inventory stock will not increase until the receiver approves it and staff posts the approved stock." +
+                alert
         );
     }
 
     private String stockItemDisplay(DataStorage.Item item) {
-        return item.id + " | " + item.name + " | Current: " + item.quantity;
+        String alert = isPriorityLowStock(item.id, item.quantity) ? " | LOW STOCK: " + item.quantity + " left" : "";
+        return item.id + " | " + item.name + " | Current: " + item.quantity + alert;
     }
 
     private String selectedStockItemCode(String selectedItem) {
@@ -918,6 +1024,52 @@ public class OrderForm {
         }
         int separatorIndex = selectedItem.indexOf(" | ");
         return separatorIndex < 0 ? selectedItem.trim() : selectedItem.substring(0, separatorIndex).trim();
+    }
+
+    private boolean isLowStock(int quantity) {
+        return quantity <= LOW_STOCK_THRESHOLD;
+    }
+
+    private boolean isPriorityLowStock(String itemCode, int quantity) {
+        return isLowStock(quantity) && !receiverApprovedStockItemCodes.contains(itemCode);
+    }
+
+    private boolean isPriorityLowStockDisplay(String displayValue) {
+        String itemCode = selectedStockItemCode(displayValue);
+        Integer quantity = stockQuantityByItemCode.get(itemCode);
+        return quantity != null && isPriorityLowStock(itemCode, quantity);
+    }
+
+    private void selectStockItemByCode(String itemCode) {
+        if (itemCode == null || itemCode.isBlank()) {
+            return;
+        }
+        for (int i = 0; i < stockItemBox.getItemCount(); i++) {
+            String candidate = stockItemBox.getItemAt(i);
+            if (itemCode.equalsIgnoreCase(selectedStockItemCode(candidate))) {
+                stockItemBox.setSelectedIndex(i);
+                if (stockItemList != null && i < stockItemListModel.size()) {
+                    stockItemList.setSelectedIndex(i);
+                    stockItemList.ensureIndexIsVisible(i);
+                }
+                return;
+            }
+        }
+    }
+
+    private void updateStockAlert(List<String> lowStockItems, int approvedStockCount) {
+        if (stockAlertLabel == null) {
+            return;
+        }
+        if (!lowStockItems.isEmpty()) {
+            stockAlertLabel.setForeground(LOW_STOCK_COLOR);
+            stockAlertLabel.setText("Priority Alert: " + String.join(", ", lowStockItems) + ". Select the red items first.");
+        } else if (approvedStockCount > 0) {
+            stockAlertLabel.setForeground(new Color(46, 125, 50));
+            stockAlertLabel.setText("Receiver approved " + approvedStockCount + " stock request(s). Staff can post approved stock now.");
+        } else {
+            stockAlertLabel.setText(" ");
+        }
     }
 
     private void reloadCancelOrderOptions() {

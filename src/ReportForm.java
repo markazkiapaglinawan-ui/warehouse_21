@@ -14,6 +14,7 @@ public class ReportForm {
     private static final String INVENTORY_CARD = "inventory";
     private static final String ORDERS_CARD = "orders";
     private static final String SALES_CARD = "sales";
+    private static final int LOW_STOCK_THRESHOLD = 9;
 
     private final UserRole userRole;
     private final CardLayout contentLayout = new CardLayout();
@@ -231,7 +232,7 @@ public class ReportForm {
         Object[][] data = new Object[items.size()][4];
         for (int i = 0; i < items.size(); i++) {
             DataStorage.Item item = items.get(i);
-            data[i] = new Object[]{item.id, item.name, item.quantity, item.quantity > 5 ? "IN STOCK" : "LOW STOCK"};
+            data[i] = new Object[]{item.id, item.name, item.quantity, item.quantity > LOW_STOCK_THRESHOLD ? "IN STOCK" : "LOW STOCK"};
         }
         setTableData(dailyTable, data, new Object[]{"Item ID", "Item Name", "Quantity", "Status"});
         contentLayout.show(contentPanel, DAILY_CARD);
@@ -242,7 +243,7 @@ public class ReportForm {
         List<DataStorage.Item> allItems = DataStorage.getInstance().getItems();
         List<DataStorage.Item> lowStock = new ArrayList<>();
         for (DataStorage.Item item : allItems) {
-            if (item.quantity <= 5) {
+            if (item.quantity <= LOW_STOCK_THRESHOLD) {
                 lowStock.add(item);
             }
         }

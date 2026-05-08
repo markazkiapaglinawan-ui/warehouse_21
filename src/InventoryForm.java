@@ -105,6 +105,7 @@ public class InventoryForm {
         } else {
             configureBoundUi();
         }
+        DataStorage.getInstance().addInventoryChangeListener(this::handleInventoryDataChanged);
         applyRoleAccess();
         showOverview();
     }
@@ -690,6 +691,10 @@ public class InventoryForm {
         }
         if (staffApprovedStockBox.getItemCount() > 0) {
             staffApprovedStockBox.setSelectedIndex(0);
+            statusLabel.setForeground(new Color(46, 125, 50));
+            statusLabel.setText("Receiver approved " + approvedStockRequests.size() + " stock request(s). Post them to update admin, staff, and customer stock.");
+        } else {
+            statusLabel.setText(" ");
         }
         updateApprovedStockDetails();
     }
@@ -729,7 +734,7 @@ public class InventoryForm {
                 "Requested By: " + request.requestedBy + " (" + request.requestedRole + ")\n" +
                 "Approved By: " + (request.approvedBy == null || request.approvedBy.isBlank() ? "-" : request.approvedBy) + "\n" +
                 "Approved At: " + (request.approvedAt == null || request.approvedAt.isBlank() ? "-" : request.approvedAt) + "\n\n" +
-                "This item selector is locked. Staff can only post stocks approved by the receiver."
+                "Receiver approval is connected to admin, staff, and customer views. Post this stock to update the live inventory quantity."
         );
     }
 
@@ -755,6 +760,17 @@ public class InventoryForm {
         } catch (Exception ex) {
             showError(ex.getMessage());
         }
+    }
+
+    private void handleInventoryDataChanged() {
+        if (userRole != UserRole.STAFF) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            if (staffApprovedStockBox != null) {
+                reloadApprovedStockRequests();
+            }
+        });
     }
 
     private File chooseImageFile() {

@@ -10,10 +10,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class CustomerMainMenu {
     private static final String SHOP_VIEW = "shop";
@@ -29,7 +31,7 @@ public class CustomerMainMenu {
     private final List<Product> products = new java.util.ArrayList<>();
     private final CardLayout contentLayout = new CardLayout();
     private static final int QR_SIZE = 280;
-    private static final int LIMITED_STOCK_THRESHOLD = 20;
+    private static final int LIMITED_STOCK_THRESHOLD = 9;
     private static final double DELIVERY_FEE = 49.00;
     private static final String CUSTOMER_SERVICE_LOGO = "assets/customer-service-logo.png";
     private static final String PRE_ORDER_STATUS = "PRE-ORDER REQUESTED";
@@ -38,6 +40,7 @@ public class CustomerMainMenu {
     private JPanel contentPanel;
     private JPanel cardsPanel;
     private JPanel cartItemsPanel;
+    private JLabel shopNoticeLabel;
     private JLabel cartBadgeLabel;
     private JLabel userLabel;
     private JComboBox<String> categoryBox;
@@ -64,6 +67,7 @@ public class CustomerMainMenu {
         this.logoutHandler = logoutHandler;
         loadProductsFromInventory();
         buildUi();
+        DataStorage.getInstance().addInventoryChangeListener(this::handleInventoryDataChanged);
     }
 
     private void buildUi() {
@@ -158,12 +162,25 @@ public class CustomerMainMenu {
         shopPanel.setOpaque(false);
 
         String displayName = currentUser.fullName.isBlank() ? currentUser.username : currentUser.fullName;
+        JPanel headerPanel = new JPanel();
+        headerPanel.setOpaque(false);
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+
         JLabel title = new JLabel(displayName + ", welcome to RAMJA'S Warehouse");
         title.setFont(new Font("Segoe UI", Font.BOLD, 48));
         title.setForeground(new Color(18, 56, 124));
         title.setHorizontalAlignment(SwingConstants.CENTER);
-        title.setBorder(new EmptyBorder(24, 0, 18, 0));
-        shopPanel.add(title, BorderLayout.NORTH);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        title.setBorder(new EmptyBorder(24, 0, 8, 0));
+
+        shopNoticeLabel = new JLabel(" ");
+        shopNoticeLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        shopNoticeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        shopNoticeLabel.setBorder(new EmptyBorder(0, 0, 12, 0));
+
+        headerPanel.add(title);
+        headerPanel.add(shopNoticeLabel);
+        shopPanel.add(headerPanel, BorderLayout.NORTH);
 
         cardsPanel = new JPanel(new GridLayout(0, 4, 12, 12));
         cardsPanel.setOpaque(false);
@@ -703,6 +720,7 @@ public class CustomerMainMenu {
 
     private void refreshProductCards() {
         cardsPanel.removeAll();
+        refreshShopNotice();
         String category = (String) categoryBox.getSelectedItem();
         String keyword = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase();
         int shownCount = 0;
@@ -1065,20 +1083,26 @@ public class CustomerMainMenu {
     }
 
     private boolean isLimitedStock(Product product) {
-        return product.stock > 0 && product.stock <= LIMITED_STOCK_THRESHOLD;
+        return product.stock > 0 && product.stock <= LIMITED_STOCK_THRESHOLD && !product.restockApproved;
     }
 
     private String stockDisplayText(Product product) {
+        if (product.restockApproved && product.stock <= LIMITED_STOCK_THRESHOLD) {
+            return "Restock approved - " + product.stock + " left now";
+        }
         if (product.stock <= 0) {
             return "Out of Stock - Pre-Order available";
         }
         if (isLimitedStock(product)) {
-            return "Limited only: " + product.stock + " available";
+            return "Low stock: only " + product.stock + " left";
         }
         return "Stock: " + product.stock;
     }
 
     private Color stockDisplayColor(Product product) {
+        if (product.restockApproved && product.stock <= LIMITED_STOCK_THRESHOLD) {
+            return new Color(46, 125, 50);
+        }
         if (product.stock <= 0) {
             return new Color(185, 28, 28);
         }
@@ -1233,8 +1257,19 @@ public class CustomerMainMenu {
     }
 
     private void loadProductsFromInventory() {
+        loadProductsFromInventory(false);
+    }
+
+    private void loadProductsFromInventory(boolean preserveCart) {
+        Map<String, Integer> savedCart = new LinkedHashMap<>();
+        if (preserveCart) {
+            for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+                savedCart.put(entry.getKey().itemCode, entry.getValue());
+            }
+        }
         products.clear();
         cart.clear();
+        Set<String> approvedStockItemCodes = approvedStockItemCodes();
         for (DataStorage.Item item : DataStorage.getInstance().getItems()) {
             int customerStock = isRouterItem(item.name) ? 0 : item.quantity;
             Product product = new Product(
@@ -1245,11 +1280,61 @@ public class CustomerMainMenu {
                     customerStock,
                     item.imagePath == null || item.imagePath.isBlank()
                             ? imageForItemName(item.name, item.category)
-                            : item.imagePath
+                            : item.imagePath,
+                    approvedStockItemCodes.contains(item.id)
             );
             products.add(product);
-            cart.put(product, 0);
+            cart.put(product, savedCart.getOrDefault(item.id, 0));
         }
+    }
+
+    private Set<String> approvedStockItemCodes() {
+        Set<String> itemCodes = new HashSet<>();
+        for (DataStorage.StockRequest request : DataStorage.getInstance().getStockRequestsByStatus("APPROVED")) {
+            if (request.itemCode != null && !request.itemCode.isBlank()) {
+                itemCodes.add(request.itemCode);
+            }
+        }
+        return itemCodes;
+    }
+
+    private void refreshShopNotice() {
+        if (shopNoticeLabel == null) {
+            return;
+        }
+        List<String> lowStockItems = new java.util.ArrayList<>();
+        int approvedCount = 0;
+        for (Product product : products) {
+            if (product.restockApproved && product.stock <= LIMITED_STOCK_THRESHOLD) {
+                approvedCount++;
+            } else if (product.stock <= LIMITED_STOCK_THRESHOLD) {
+                lowStockItems.add(product.name + " (" + product.stock + " left)");
+            }
+        }
+        if (!lowStockItems.isEmpty()) {
+            shopNoticeLabel.setForeground(new Color(185, 28, 28));
+            shopNoticeLabel.setText("Stock Alert: " + String.join(", ", lowStockItems));
+        } else if (approvedCount > 0) {
+            shopNoticeLabel.setForeground(new Color(46, 125, 50));
+            shopNoticeLabel.setText("Receiver approved restock for " + approvedCount + " item(s). Stock will update after posting.");
+        } else {
+            shopNoticeLabel.setText(" ");
+        }
+    }
+
+    private void handleInventoryDataChanged() {
+        SwingUtilities.invokeLater(() -> {
+            loadProductsFromInventory(true);
+            if (cardsPanel != null) {
+                refreshProductCards();
+            }
+            if (cartBadgeLabel != null) {
+                updateCartBadge();
+            }
+            if (cartItemsPanel != null) {
+                refreshCartPanel();
+            }
+        });
     }
 
     private boolean isRouterItem(String itemName) {
@@ -1715,14 +1800,16 @@ public class CustomerMainMenu {
         private final double price;
         private final int stock;
         private final String imageUrl;
+        private final boolean restockApproved;
 
-        private Product(String itemCode, String name, String category, double price, int stock, String imageUrl) {
+        private Product(String itemCode, String name, String category, double price, int stock, String imageUrl, boolean restockApproved) {
             this.itemCode = itemCode;
             this.name = name;
             this.category = category;
             this.price = price;
             this.stock = stock;
             this.imageUrl = imageUrl;
+            this.restockApproved = restockApproved;
         }
     }
 }

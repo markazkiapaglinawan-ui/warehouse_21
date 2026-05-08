@@ -11,6 +11,7 @@ import java.util.List;
 
 public class DataStorage {
     private static DataStorage instance;
+    private final List<Runnable> inventoryChangeListeners = new ArrayList<>();
 
     private DataStorage() {
         initializeDatabase();
@@ -21,6 +22,26 @@ public class DataStorage {
             instance = new DataStorage();
         }
         return instance;
+    }
+
+    public synchronized void addInventoryChangeListener(Runnable listener) {
+        if (listener != null && !inventoryChangeListeners.contains(listener)) {
+            inventoryChangeListeners.add(listener);
+        }
+    }
+
+    private void notifyInventoryChanged() {
+        List<Runnable> listeners;
+        synchronized (this) {
+            listeners = new ArrayList<>(inventoryChangeListeners);
+        }
+        for (Runnable listener : listeners) {
+            try {
+                listener.run();
+            } catch (RuntimeException ignored) {
+                // One screen failing to refresh should not block stock updates for other roles.
+            }
+        }
     }
 
     public synchronized void addItem(Item item) {
@@ -44,6 +65,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to add item.", e);
         }
+        notifyInventoryChanged();
     }
 
     public synchronized List<Item> getItems() {
@@ -125,6 +147,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to update item.", e);
         }
+        notifyInventoryChanged();
     }
 
     public synchronized void deleteItem(String itemId) {
@@ -139,6 +162,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to delete item.", e);
         }
+        notifyInventoryChanged();
     }
 
     public synchronized void addStockRequest(StockRequest request) {
@@ -173,6 +197,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to add stock request.", e);
         }
+        notifyInventoryChanged();
     }
 
     public synchronized List<StockRequest> getStockRequests() {
@@ -234,6 +259,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to approve stock request.", e);
         }
+        notifyInventoryChanged();
     }
 
     public synchronized void postApprovedStockRequest(int requestId, String postedBy) {
@@ -295,6 +321,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to post approved stock.", e);
         }
+        notifyInventoryChanged();
     }
 
     private StockRequest readStockRequest(ResultSet resultSet) throws SQLException {
@@ -395,6 +422,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to create order.", e);
         }
+        notifyInventoryChanged();
     }
 
     public synchronized List<Order> getOrders() {
@@ -711,6 +739,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to cancel customer order.", e);
         }
+        notifyInventoryChanged();
     }
 
     private boolean isCustomerOrderOwner(String storedUsername, String storedName, String currentUsername, String currentName) {
@@ -792,6 +821,7 @@ public class DataStorage {
         } catch (SQLException e) {
             throw mapDatabaseError("Failed to cancel order.", e);
         }
+        notifyInventoryChanged();
     }
 
     public synchronized void addUser(User user) {
